@@ -45,15 +45,27 @@ spew.Fprintf(someWriter, "myVar1: %v -- myVar2: %+v", myVar1, myVar2)
 ## Sample Dump Output
 
 ```
-  (main.Foo) {
-	 unexportedField: (*main.Bar)(0xf84002e210)({
-	  flag: (main.Flag) flagTwo,
-	  data: (uintptr) <nil>
-	 }),
-	 ExportedField: (map[interface {}]interface {}) {
-	  (string) "one": (bool) true
-	 }
-	}
+(main.Foo) {
+ unexportedField: (*main.Bar)(0xf84002e210)({
+  flag: (main.Flag) flagTwo,
+  data: (uintptr) <nil>
+ }),
+ ExportedField: (map[interface {}]interface {}) {
+  (string) "one": (bool) true
+ }
+}
+```
+
+## Sample Formatter Output
+
+Double pointer to a uint8 via %v:
+```
+	<**>5
+```
+
+Circular struct with a uint8 field and a pointer to itself via %+v:
+```
+	{ui8:1 c:<*>(0xf84002d200){ui8:1 c:<*>(0xf84002d200)<shown>}}
 ```
 
 ## License
