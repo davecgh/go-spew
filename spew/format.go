@@ -328,7 +328,7 @@ precision arguments (however they will still work on the format specifiers not
 handled by the custom formatter).
 
 Typically this function shouldn't be called directly.  It is much easier to make
-use of the custom formatter is to call one of the convenience functions such as
+use of the custom formatter by calling one of the convenience functions such as
 Printf, Println, or Printf.
 */
 func NewFormatter(v interface{}) (f fmt.Formatter) {
