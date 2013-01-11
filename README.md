@@ -77,8 +77,8 @@ Circular struct with a uint8 field and a pointer to itself via %+v:
 
 ```
 * spew.Config.MaxDepth
-  Maximum number of levels to descend into nested data structures.
-  There is no limit by default.
+	Maximum number of levels to descend into nested data structures.
+	There is no limit by default.
 
 * spew.Config.Indent
 	String to use for each indentation level for Dump functions.
