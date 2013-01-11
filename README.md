@@ -7,6 +7,11 @@ output is likely to change, however it is already quite capable.   It is
 licensed under the liberal ISC license, so it may be used in open source or
 commercial projects.
 
+If you're interested in reading about how this package came to life and some
+of the challenges involved in provide a deep pretty printer, there is a blog
+post about it
+[here](https://blog.cyphertite.com/go-spew-a-journey-into-dumping-go-data-structures/).
+
 ## Documentation
 
 Full `go doc` style documentation for the project can be viewed online without
@@ -66,6 +71,27 @@ Double pointer to a uint8 via %v:
 Circular struct with a uint8 field and a pointer to itself via %+v:
 ```
 	{ui8:1 c:<*>(0xf84002d200){ui8:1 c:<*>(0xf84002d200)<shown>}}
+```
+
+## Configuration Options
+
+```
+* spew.Config.MaxDepth
+  Maximum number of levels to descend into nested data structures.
+  There is no limit by default.
+
+* spew.Config.Indent
+	String to use for each indentation level for Dump functions.
+	It is a single space by default.  A popular alternative is "\t".
+
+* spew.Config.DisableMethods
+	Disables invocation of error and Stringer interface methods.
+	Method invocation is enabled by default.
+
+* spew.Config.DisablePointerMethods
+	Disables invocation of error and Stringer interface methods on types
+	which only accept pointer receivers from non-pointer variables.
+	Pointer method invocation is enabled by default.
 ```
 
 ## License
