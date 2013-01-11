@@ -37,6 +37,7 @@ type formatState struct {
 	depth    int
 	pointers map[uintptr]int // Holds map of points and depth they were seen at
 	fs       fmt.State
+	cs       *ConfigState
 }
 
 // buildDefaultFormat recreates the original format string without precision
@@ -175,9 +176,9 @@ func (f *formatState) format(v reflect.Value) {
 	// Call error/Stringer interfaces if they exist and the handle methods
 	// flag is enabled.
 	kind := v.Kind()
-	if !Config.DisableMethods {
+	if !f.cs.DisableMethods {
 		if (kind != reflect.Invalid) && (kind != reflect.Interface) {
-			if handled := handleMethods(&f.buffer, v); handled {
+			if handled := handleMethods(f.cs, &f.buffer, v); handled {
 				return
 			}
 		}
@@ -211,7 +212,7 @@ func (f *formatState) format(v reflect.Value) {
 	case reflect.Array, reflect.Slice:
 		f.buffer.WriteRune('[')
 		f.depth++
-		if (Config.MaxDepth != 0) && (f.depth > Config.MaxDepth) {
+		if (f.cs.MaxDepth != 0) && (f.depth > f.cs.MaxDepth) {
 			f.buffer.Write(maxShortBytes)
 		} else {
 			numEntries := v.Len()
@@ -234,7 +235,7 @@ func (f *formatState) format(v reflect.Value) {
 	case reflect.Map:
 		f.buffer.Write(openMapBytes)
 		f.depth++
-		if (Config.MaxDepth != 0) && (f.depth > Config.MaxDepth) {
+		if (f.cs.MaxDepth != 0) && (f.depth > f.cs.MaxDepth) {
 			f.buffer.Write(maxShortBytes)
 		} else {
 			keys := v.MapKeys()
@@ -257,7 +258,7 @@ func (f *formatState) format(v reflect.Value) {
 		numFields := v.NumField()
 		f.buffer.WriteRune('{')
 		f.depth++
-		if (Config.MaxDepth != 0) && (f.depth > Config.MaxDepth) {
+		if (f.cs.MaxDepth != 0) && (f.depth > f.cs.MaxDepth) {
 			f.buffer.Write(maxShortBytes)
 		} else {
 			vt := v.Type()
@@ -331,8 +332,8 @@ Typically this function shouldn't be called directly.  It is much easier to make
 use of the custom formatter by calling one of the convenience functions such as
 Printf, Println, or Printf.
 */
-func NewFormatter(v interface{}) (f fmt.Formatter) {
-	fs := &formatState{value: v}
+func NewFormatter(v interface{}) fmt.Formatter {
+	fs := &formatState{value: v, cs: &Config}
 	fs.pointers = make(map[uintptr]int)
 	return fs
 }

@@ -32,16 +32,17 @@ type dumpState struct {
 	pointers       map[uintptr]int
 	ignoreNextType bool
 	ignoreNextPad  bool
+	cs             *ConfigState
 }
 
-// pad performs indentation according to the depth level and Config.Indent
+// pad performs indentation according to the depth level and cs.Indent
 // option.
 func (d *dumpState) pad() {
 	if d.ignoreNextPad {
 		d.ignoreNextPad = false
 		return
 	}
-	d.w.Write(bytes.Repeat([]byte(Config.Indent), d.depth))
+	d.w.Write(bytes.Repeat([]byte(d.cs.Indent), d.depth))
 }
 
 // dumpPtr handles formatting of pointers by indirecting them as necessary.
@@ -146,9 +147,9 @@ func (d *dumpState) dump(v reflect.Value) {
 
 	// Call error/Stringer interfaces if they exist and the handle methods flag
 	// is enabled
-	if !Config.DisableMethods {
+	if !d.cs.DisableMethods {
 		if (kind != reflect.Invalid) && (kind != reflect.Interface) {
-			if handled := handleMethods(d.w, v); handled {
+			if handled := handleMethods(d.cs, d.w, v); handled {
 				return
 			}
 		}
@@ -182,7 +183,7 @@ func (d *dumpState) dump(v reflect.Value) {
 	case reflect.Array, reflect.Slice:
 		d.w.Write(openBraceNewlineBytes)
 		d.depth++
-		if (Config.MaxDepth != 0) && (d.depth > Config.MaxDepth) {
+		if (d.cs.MaxDepth != 0) && (d.depth > d.cs.MaxDepth) {
 			d.pad()
 			d.w.Write(maxNewlineBytes)
 		} else {
@@ -213,7 +214,7 @@ func (d *dumpState) dump(v reflect.Value) {
 	case reflect.Map:
 		d.w.Write(openBraceNewlineBytes)
 		d.depth++
-		if (Config.MaxDepth != 0) && (d.depth > Config.MaxDepth) {
+		if (d.cs.MaxDepth != 0) && (d.depth > d.cs.MaxDepth) {
 			d.pad()
 			d.w.Write(maxNewlineBytes)
 		} else {
@@ -238,7 +239,7 @@ func (d *dumpState) dump(v reflect.Value) {
 	case reflect.Struct:
 		d.w.Write(openBraceNewlineBytes)
 		d.depth++
-		if (Config.MaxDepth != 0) && (d.depth > Config.MaxDepth) {
+		if (d.cs.MaxDepth != 0) && (d.depth > d.cs.MaxDepth) {
 			d.pad()
 			d.w.Write(maxNewlineBytes)
 		} else {
@@ -291,7 +292,7 @@ func Fdump(w io.Writer, a ...interface{}) {
 			continue
 		}
 
-		d := dumpState{w: w}
+		d := dumpState{w: w, cs: &Config}
 		d.pointers = make(map[uintptr]int)
 		d.dump(reflect.ValueOf(arg))
 		d.w.Write(newlineBytes)

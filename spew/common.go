@@ -125,7 +125,7 @@ func catchPanic(w io.Writer, v reflect.Value) {
 //
 // It handles panics in any called methods by catching and displaying the error
 // as the formatted value.
-func handleMethods(w io.Writer, v reflect.Value) (handled bool) {
+func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool) {
 	// We need an interface to check if the type implements the error or
 	// Stringer interface.  However, the reflect package won't give us an
 	// an interface on certain things like unexported struct fields in order
@@ -142,7 +142,7 @@ func handleMethods(w io.Writer, v reflect.Value) (handled bool) {
 	// Stringer interface with a pointer receiver should not be mutating their
 	// state inside these interface methods.
 	var viface interface{}
-	if !Config.DisablePointerMethods {
+	if !cs.DisablePointerMethods {
 		if !v.CanAddr() {
 			v = unsafeReflectValue(v)
 		}
