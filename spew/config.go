@@ -17,11 +17,10 @@
 package spew
 
 // ConfigState is used to describe configuration options used by spew to format
-// and display values.  There is currently only a single global instance, Config,
-// that is used to control all Formatter and Dump functionality.  This state
-// is designed so that it would be fairly simple to add the ability to have
-// unique config per Formatter or dumpState instance if there is demand for
-// such a feature.
+// and display values.  There is a  global instance, Config, that is used to
+// control all top-level Formatter and Dump functionality.  In addition, each
+// SpewState instance provides access to a unique ConfigState which can be used
+// to control the configuration of that particular instance.
 type ConfigState struct {
 	// MaxDepth controls the maximum number of levels to descend into nested
 	// data structures.  The default, 0, means there is no limit.
@@ -52,8 +51,8 @@ type ConfigState struct {
 	DisablePointerMethods bool
 }
 
-// Config is the active configuration in use by spew.  The configuration
-// can be changed by modifying the contents of spew.Config.
+// Config is the active configuration of the top-level functions.
+// The configuration can be changed by modifying the contents of spew.Config.
 var Config ConfigState = ConfigState{Indent: " "}
 
 var defaultConfig = ConfigState{Indent: " "}
