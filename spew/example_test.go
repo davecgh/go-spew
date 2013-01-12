@@ -130,3 +130,95 @@ func ExamplePrintf() {
 	// ppui8: <**>5
 	// circular: {1 <*>{1 <*><shown>}}
 }
+
+// This example demonstrates how to use a SpewState.
+func ExampleSpewState() {
+	// A SpewState does not need initialization.
+	ss := new(spew.SpewState) // or var ss spew.SpewState
+
+	// Modify the indent level of the SpewState only.  The global configuration
+	// is not modified.
+	ssc := ss.Config()
+	ssc.Indent = "\t"
+
+	// Output using the SpewState instance.
+	v := map[string]int{"one": 1}
+	ss.Printf("v: %v\n", v)
+	ss.Dump(v)
+
+	// Output:
+	// v: map[one:1]
+	// (map[string]int) {
+	// 	(string) "one": (int) 1
+	// }
+}
+
+// This example demonstrates how to use a SpewState.Dump to dump variables to
+// stdout
+func ExampleSpewState_Dump() {
+	// See the top-level Dump example for details on the types used in this
+	// example.
+
+	// A SpewState does not need initialization.
+	ss := new(spew.SpewState) // or var ss spew.SpewState
+	ss2 := new(spew.SpewState) // or var ss2 spew.SpewState
+
+	// Modify the indent level of the first SpewState only.
+	ssc := ss.Config()
+	ssc.Indent = "\t"
+
+	// Setup some sample data structures for the example.
+	bar := Bar{Flag(flagTwo), uintptr(0)}
+	s1 := Foo{bar, map[interface{}]interface{}{"one": true}}
+
+	// Dump using the SpewState instances.
+	ss.Dump(s1)
+	ss2.Dump(s1)
+
+	// Output:
+	// (spew_test.Foo) {
+	// 	unexportedField: (spew_test.Bar) {
+	// 		flag: (spew_test.Flag) flagTwo,
+	// 		data: (uintptr) <nil>
+	// 	},
+	// 	ExportedField: (map[interface {}]interface {}) {
+	//		(string) "one": (bool) true
+	// 	}
+	// }
+	// (spew_test.Foo) {
+	//  unexportedField: (spew_test.Bar) {
+	//   flag: (spew_test.Flag) flagTwo,
+	//   data: (uintptr) <nil>
+	//  },
+	//  ExportedField: (map[interface {}]interface {}) {
+	//   (string) "one": (bool) true
+	//  }
+	// }
+	//
+}
+
+// This example demonstrates how to use SpewState.Printf to display a variable
+// with a format string and inline formatting.
+func ExampleSpewState_Printf() {
+	// See the top-level Dump example for details on the types used in this
+	// example.
+
+	// A SpewState does not need initialization.
+	ss := new(spew.SpewState) // or var ss spew.SpewState
+	ss2 := new(spew.SpewState) // or var ss2 spew.SpewState
+
+	// Modify the method handling of the first SpewState only.
+	ssc := ss.Config()
+	ssc.DisableMethods = true
+
+	// This is of type Flag which implements a Stringer and has raw value 1.
+	f := flagTwo
+
+	// Dump using the SpewState instances.
+	ss.Printf("f: %v\n", f)
+	ss2.Printf("f: %v\n", f)
+
+	// Output:
+	// f: 1
+	// f: flagTwo
+}

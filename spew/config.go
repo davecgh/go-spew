@@ -55,3 +55,5 @@ type ConfigState struct {
 // Config is the active configuration in use by spew.  The configuration
 // can be changed by modifying the contents of spew.Config.
 var Config ConfigState = ConfigState{Indent: " "}
+
+var defaultConfig = ConfigState{Indent: " "}

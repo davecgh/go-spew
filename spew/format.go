@@ -316,6 +316,14 @@ func (f *formatState) Format(fs fmt.State, verb rune) {
 	f.buffer.WriteTo(fs)
 }
 
+// newFormatter is a helper function to consolidate the logic from the various
+// public methods which take varying config states.
+func newFormatter(cs *ConfigState, v interface{}) fmt.Formatter {
+	fs := &formatState{value: v, cs: cs}
+	fs.pointers = make(map[uintptr]int)
+	return fs
+}
+
 /*
 NewFormatter returns a custom formatter that satisfies the fmt.Formatter
 interface.  As a result, it integrates cleanly with standard fmt package
@@ -333,7 +341,5 @@ use of the custom formatter by calling one of the convenience functions such as
 Printf, Println, or Printf.
 */
 func NewFormatter(v interface{}) fmt.Formatter {
-	fs := &formatState{value: v, cs: &Config}
-	fs.pointers = make(map[uintptr]int)
-	return fs
+	return newFormatter(&Config, v)
 }
