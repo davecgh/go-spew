@@ -115,11 +115,11 @@ func (f *formatState) formatPtr(v reflect.Value) {
 	indirects := 0
 	ve := v
 	for ve.Kind() == reflect.Ptr {
-		indirects++
 		if ve.IsNil() {
 			nilFound = true
 			break
 		}
+		indirects++
 		addr := ve.Pointer()
 		pointerChain = append(pointerChain, addr)
 		if pd, ok := f.pointers[addr]; ok && pd < f.depth {

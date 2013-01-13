@@ -66,11 +66,11 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 	indirects := 0
 	ve := v
 	for ve.Kind() == reflect.Ptr {
-		indirects++
 		if ve.IsNil() {
 			nilFound = true
 			break
 		}
+		indirects++
 		addr := ve.Pointer()
 		pointerChain = append(pointerChain, addr)
 		if pd, ok := d.pointers[addr]; ok && pd < d.depth {
@@ -97,14 +97,16 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 	d.w.Write(closeParenBytes)
 
 	// Display pointer information.
-	d.w.Write(openParenBytes)
-	for i, addr := range pointerChain {
-		if i > 0 {
-			d.w.Write(pointerChainBytes)
+	if len(pointerChain) > 0 {
+		d.w.Write(openParenBytes)
+		for i, addr := range pointerChain {
+			if i > 0 {
+				d.w.Write(pointerChainBytes)
+			}
+			printHexPtr(d.w, addr)
 		}
-		printHexPtr(d.w, addr)
+		d.w.Write(closeParenBytes)
 	}
-	d.w.Write(closeParenBytes)
 
 	// Display dereferenced value.
 	d.w.Write(openParenBytes)
