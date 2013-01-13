@@ -259,16 +259,16 @@ package:
 
 	* Pointers are dereferenced and followed
 	* Circular data structures are detected and handled properly
-	* Custom error/Stringer interfaces are optionally invoked, including
+	* Custom Stringer/error interfaces are optionally invoked, including
 	  on unexported types
-	* Custom types which only implement the error/Stringer interfaces via
+	* Custom types which only implement the Stringer/error interfaces via
 	  a pointer receiver are optionally invoked when passing non-pointer
 	  variables
 
 The configuration options are controlled by accessing the ConfigState associated
 with s via the Config method.  See ConfigState for options documentation.
 
-See Fdump if you would prefer dump to an arbitrary io.Writer.
+See Fdump if you would prefer dumping to an arbitrary io.Writer.
 */
 func (s *SpewState) Dump(a ...interface{}) {
 	// The Config method creates the config state if needed, so call it instead

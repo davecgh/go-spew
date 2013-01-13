@@ -23,9 +23,9 @@ printing facilities for Go data types are as follows:
 
 	* Pointers are dereferenced and followed
 	* Circular data structures are detected and handled properly
-	* Custom error/Stringer interfaces are optionally invoked, including
+	* Custom Stringer/error interfaces are optionally invoked, including
 	  on unexported types
-	* Custom types which only implement the error/Stringer interfaces via
+	* Custom types which only implement the Stringer/error interfaces via
 	  a pointer receiver are optionally invoked when passing non-pointer
 	  variables
 
@@ -149,7 +149,7 @@ here.
 
 Errors
 
-Since it is possible for custom error/Stringer interfaces to panic, spew
+Since it is possible for custom Stringer/error interfaces to panic, spew
 detects them and handles them internally by printing the panic information
 inline with the output.  Since spew is intended to provide deep pretty printing
 capabilities on structures, it intentionally does not return any errors.

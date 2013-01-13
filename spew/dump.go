@@ -58,7 +58,7 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 	// Keep list of all dereferenced pointers to show later.
 	pointerChain := make([]uintptr, 0)
 
-	// Figure out how many levels of indirection there are by derferencing
+	// Figure out how many levels of indirection there are by dereferencing
 	// pointers and unpacking interfaces down the chain while detecting circular
 	// references.
 	nilFound := false
@@ -147,7 +147,7 @@ func (d *dumpState) dump(v reflect.Value) {
 	}
 	d.ignoreNextType = false
 
-	// Call error/Stringer interfaces if they exist and the handle methods flag
+	// Call Stringer/error interfaces if they exist and the handle methods flag
 	// is enabled
 	if !d.cs.DisableMethods {
 		if (kind != reflect.Invalid) && (kind != reflect.Interface) {
@@ -210,7 +210,7 @@ func (d *dumpState) dump(v reflect.Value) {
 		// Do nothing.  We should never get here due to unpackValue calls.
 
 	case reflect.Ptr:
-		// Do nothing.  We should never get here since pointer have already
+		// Do nothing.  We should never get here since pointers have already
 		// been handled above.
 
 	case reflect.Map:
@@ -316,16 +316,16 @@ package:
 
 	* Pointers are dereferenced and followed
 	* Circular data structures are detected and handled properly
-	* Custom error/Stringer interfaces are optionally invoked, including
+	* Custom Stringer/error interfaces are optionally invoked, including
 	  on unexported types
-	* Custom types which only implement the error/Stringer interfaces via
+	* Custom types which only implement the Stringer/error interfaces via
 	  a pointer receiver are optionally invoked when passing non-pointer
 	  variables
 
 The configuration options are controlled by an exported package global,
 spew.Config.  See ConfigState for options documentation.
 
-See Fdump if you would prefer dump to an arbitrary io.Writer.
+See Fdump if you would prefer dumping to an arbitrary io.Writer.
 */
 func Dump(a ...interface{}) {
 	fdump(&Config, os.Stdout, a...)
