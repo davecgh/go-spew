@@ -16,8 +16,8 @@
 
 /*
 Test Summary:
-NOTE: For each test, a pointer and double pointer to the base test element
-are also tested to ensure proper indirection across all types.
+NOTE: For each test, a nil pointer, a single pointer and double pointer to the
+base test element are also tested to ensure proper indirection across all types.
 
 - Max int8, int16, int32, int64, int
 - Max uint8, uint16, uint32, uint64, uint
@@ -109,6 +109,7 @@ func addDumpTest(in interface{}, want string) {
 func addIntTests() {
 	// Max int8.
 	v := int8(127)
+	nv := (*int8)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -117,9 +118,11 @@ func addIntTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Max int16.
 	v2 := int16(32767)
+	nv2 := (*int16)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -128,9 +131,11 @@ func addIntTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 
 	// Max int32.
 	v3 := int32(2147483647)
+	nv3 := (*int32)(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
 	pv3Addr := fmt.Sprintf("%p", &pv3)
@@ -139,9 +144,11 @@ func addIntTests() {
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
+	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 
 	// Max int64.
 	v4 := int64(9223372036854775807)
+	nv4 := (*int64)(nil)
 	pv4 := &v4
 	v4Addr := fmt.Sprintf("%p", pv4)
 	pv4Addr := fmt.Sprintf("%p", &pv4)
@@ -150,9 +157,11 @@ func addIntTests() {
 	addDumpTest(v4, "("+v4t+") "+v4s+"\n")
 	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
 	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
+	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
 
 	// Max int.
 	v5 := int(2147483647)
+	nv5 := (*int)(nil)
 	pv5 := &v5
 	v5Addr := fmt.Sprintf("%p", pv5)
 	pv5Addr := fmt.Sprintf("%p", &pv5)
@@ -161,11 +170,13 @@ func addIntTests() {
 	addDumpTest(v5, "("+v5t+") "+v5s+"\n")
 	addDumpTest(pv5, "(*"+v5t+")("+v5Addr+")("+v5s+")\n")
 	addDumpTest(&pv5, "(**"+v5t+")("+pv5Addr+"->"+v5Addr+")("+v5s+")\n")
+	addDumpTest(nv5, "(*"+v5t+")(<nil>)\n")
 }
 
 func addUintTests() {
 	// Max uint8.
 	v := uint8(255)
+	nv := (*uint8)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -174,9 +185,11 @@ func addUintTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Max uint16.
 	v2 := uint16(65535)
+	nv2 := (*uint16)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -185,9 +198,11 @@ func addUintTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 
 	// Max uint32.
 	v3 := uint32(4294967295)
+	nv3 := (*uint32)(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
 	pv3Addr := fmt.Sprintf("%p", &pv3)
@@ -196,9 +211,11 @@ func addUintTests() {
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
+	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 
 	// Max uint64.
 	v4 := uint64(18446744073709551615)
+	nv4 := (*uint64)(nil)
 	pv4 := &v4
 	v4Addr := fmt.Sprintf("%p", pv4)
 	pv4Addr := fmt.Sprintf("%p", &pv4)
@@ -207,9 +224,11 @@ func addUintTests() {
 	addDumpTest(v4, "("+v4t+") "+v4s+"\n")
 	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
 	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
+	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
 
 	// Max uint.
 	v5 := uint(4294967295)
+	nv5 := (*uint)(nil)
 	pv5 := &v5
 	v5Addr := fmt.Sprintf("%p", pv5)
 	pv5Addr := fmt.Sprintf("%p", &pv5)
@@ -218,11 +237,13 @@ func addUintTests() {
 	addDumpTest(v5, "("+v5t+") "+v5s+"\n")
 	addDumpTest(pv5, "(*"+v5t+")("+v5Addr+")("+v5s+")\n")
 	addDumpTest(&pv5, "(**"+v5t+")("+pv5Addr+"->"+v5Addr+")("+v5s+")\n")
+	addDumpTest(nv5, "(*"+v5t+")(<nil>)\n")
 }
 
 func addBoolTests() {
 	// Boolean true.
 	v := bool(true)
+	nv := (*bool)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -231,6 +252,7 @@ func addBoolTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Boolean false.
 	v2 := bool(false)
@@ -247,6 +269,7 @@ func addBoolTests() {
 func addFloatTests() {
 	// Standard float32.
 	v := float32(3.1415)
+	nv := (*float32)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -255,9 +278,11 @@ func addFloatTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Standard float64.
 	v2 := float64(3.1415926)
+	nv2 := (*float64)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -266,11 +291,13 @@ func addFloatTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 }
 
 func addComplexTests() {
 	// Standard complex64.
 	v := complex(float32(6), -2)
+	nv := (*complex64)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -279,9 +306,11 @@ func addComplexTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Standard complex128.
 	v2 := complex(float64(-6), 2)
+	nv2 := (*complex128)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -290,11 +319,13 @@ func addComplexTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 }
 
 func addArrayTests() {
 	// Array containing standard ints.
 	v := [3]int{1, 2, 3}
+	nv := (*[3]int)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -303,9 +334,11 @@ func addArrayTests() {
 	addDumpTest(v, "([3]"+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*[3]"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**[3]"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*[3]"+vt+")(<nil>)\n")
 
 	// Array containing type with custom formatter on pointer receiver only.
 	v2 := [3]pstringer{"1", "2", "3"}
+	nv2 := (*[3]pstringer)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -315,11 +348,13 @@ func addArrayTests() {
 	addDumpTest(v2, "([3]"+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*[3]"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**[3]"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*[3]"+v2t+")(<nil>)\n")
 }
 
 func addSliceTests() {
 	// Slice containing standard float32 values.
 	v := []float32{3.14, 6.28, 12.56}
+	nv := (*[]float32)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -328,9 +363,11 @@ func addSliceTests() {
 	addDumpTest(v, "([]"+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*[]"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**[]"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*[]"+vt+")(<nil>)\n")
 
 	// Slice containing type with custom formatter on pointer receiver only.
 	v2 := []pstringer{"1", "2", "3"}
+	nv2 := (*[]pstringer)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -340,11 +377,13 @@ func addSliceTests() {
 	addDumpTest(v2, "([]"+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*[]"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**[]"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*[]"+v2t+")(<nil>)\n")
 }
 
 func addStringTests() {
 	// Standard string.
 	v := "test"
+	nv := (*string)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -353,11 +392,13 @@ func addStringTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 }
 
 func addNilInterfaceTests() {
 	// Nil interface.
 	var v interface{}
+	nv := (*interface{})(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -366,11 +407,13 @@ func addNilInterfaceTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 }
 
 func addMapTests() {
 	// Map with string keys and int vals.
 	v := map[string]int{"one": 1}
+	nv := (*map[string]int)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -381,9 +424,11 @@ func addMapTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Map with custom formatter type on pointer receiver only keys and vals.
 	v2 := map[pstringer]pstringer{"one": "1"}
+	nv2 := (*map[pstringer]pstringer)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -394,9 +439,11 @@ func addMapTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 
 	// Map with interface keys and values.
 	v3 := map[interface{}]interface{}{"one": 1}
+	nv3 := (*map[interface{}]interface{})(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
 	pv3Addr := fmt.Sprintf("%p", &pv3)
@@ -407,6 +454,7 @@ func addMapTests() {
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
+	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 }
 
 func addStructTests() {
@@ -416,6 +464,7 @@ func addStructTests() {
 		b uint8
 	}
 	v := s1{127, 255}
+	nv := (*s1)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -426,6 +475,7 @@ func addStructTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Struct that contains another struct.
 	type s2 struct {
@@ -433,6 +483,7 @@ func addStructTests() {
 		b  bool
 	}
 	v2 := s2{s1{127, 255}, true}
+	nv2 := (*s2)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -446,6 +497,7 @@ func addStructTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 
 	// Struct that contains custom type with Stringer pointer interface via both
 	// exported and unexported fields.
@@ -454,6 +506,7 @@ func addStructTests() {
 		S pstringer
 	}
 	v3 := s3{"test", "test2"}
+	nv3 := (*s3)(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
 	pv3Addr := fmt.Sprintf("%p", &pv3)
@@ -464,6 +517,7 @@ func addStructTests() {
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
+	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 }
 
 func addUintptrTests() {
@@ -481,6 +535,7 @@ func addUintptrTests() {
 	// Address of real variable.
 	i := 1
 	v2 := uintptr(unsafe.Pointer(&i))
+	nv2 := (*uintptr)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -489,11 +544,13 @@ func addUintptrTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 }
 
 func addUnsafePointerTests() {
 	// Null pointer.
 	v := unsafe.Pointer(uintptr(0))
+	nv := (*unsafe.Pointer)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -502,6 +559,7 @@ func addUnsafePointerTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Address of real variable.
 	i := 1
@@ -514,12 +572,14 @@ func addUnsafePointerTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 }
 
 func addChanTests() {
 	// Nil channel.
 	var v chan int
 	pv := &v
+	nv := (*chan int)(nil)
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
 	vt := "chan int"
@@ -527,6 +587,7 @@ func addChanTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Real channel.
 	v2 := make(chan int)
@@ -543,6 +604,7 @@ func addChanTests() {
 func addFuncTests() {
 	// Function with no params and no returns.
 	v := addIntTests
+	nv := (*func())(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
@@ -551,9 +613,11 @@ func addFuncTests() {
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Function with param and no returns.
 	v2 := TestDump
+	nv2 := (*func(*testing.T))(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
@@ -562,11 +626,13 @@ func addFuncTests() {
 	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 
 	// Function with multiple params and multiple returns.
 	var v3 = func(i int, s string) (b bool, err error) {
 		return true, nil
 	}
+	nv3 := (*func(int, string)(bool, error))(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
 	pv3Addr := fmt.Sprintf("%p", &pv3)
@@ -575,6 +641,7 @@ func addFuncTests() {
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
+	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 }
 
 func addCircularTests() {
