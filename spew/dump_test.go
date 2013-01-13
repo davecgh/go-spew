@@ -647,14 +647,14 @@ func TestDump(t *testing.T) {
 		buf := new(bytes.Buffer)
 		spew.Fdump(buf, test.in)
 		s := buf.String()
-		if test.want != buf.String() {
+		if test.want != s {
 			t.Errorf("Dump #%d\n got: %s want: %s", i, s, test.want)
 			continue
 		}
 	}
 }
 
-// Setup tests.f
+// Setup tests.
 func init() {
 	addIntTests()
 	addUintTests()
