@@ -106,7 +106,7 @@ func addDumpTest(in interface{}, want string) {
 	dumpTests = append(dumpTests, test)
 }
 
-func addIntTests() {
+func addIntDumpTests() {
 	// Max int8.
 	v := int8(127)
 	nv := (*int8)(nil)
@@ -173,7 +173,7 @@ func addIntTests() {
 	addDumpTest(nv5, "(*"+v5t+")(<nil>)\n")
 }
 
-func addUintTests() {
+func addUintDumpTests() {
 	// Max uint8.
 	v := uint8(255)
 	nv := (*uint8)(nil)
@@ -240,7 +240,7 @@ func addUintTests() {
 	addDumpTest(nv5, "(*"+v5t+")(<nil>)\n")
 }
 
-func addBoolTests() {
+func addBoolDumpTests() {
 	// Boolean true.
 	v := bool(true)
 	nv := (*bool)(nil)
@@ -266,7 +266,7 @@ func addBoolTests() {
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
 }
 
-func addFloatTests() {
+func addFloatDumpTests() {
 	// Standard float32.
 	v := float32(3.1415)
 	nv := (*float32)(nil)
@@ -294,7 +294,7 @@ func addFloatTests() {
 	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 }
 
-func addComplexTests() {
+func addComplexDumpTests() {
 	// Standard complex64.
 	v := complex(float32(6), -2)
 	nv := (*complex64)(nil)
@@ -322,7 +322,7 @@ func addComplexTests() {
 	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 }
 
-func addArrayTests() {
+func addArrayDumpTests() {
 	// Array containing standard ints.
 	v := [3]int{1, 2, 3}
 	nv := (*[3]int)(nil)
@@ -351,7 +351,7 @@ func addArrayTests() {
 	addDumpTest(nv2, "(*[3]"+v2t+")(<nil>)\n")
 }
 
-func addSliceTests() {
+func addSliceDumpTests() {
 	// Slice containing standard float32 values.
 	v := []float32{3.14, 6.28, 12.56}
 	nv := (*[]float32)(nil)
@@ -380,7 +380,7 @@ func addSliceTests() {
 	addDumpTest(nv2, "(*[]"+v2t+")(<nil>)\n")
 }
 
-func addStringTests() {
+func addStringDumpTests() {
 	// Standard string.
 	v := "test"
 	nv := (*string)(nil)
@@ -395,7 +395,7 @@ func addStringTests() {
 	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 }
 
-func addNilInterfaceTests() {
+func addNilInterfaceDumpTests() {
 	// Nil interface.
 	var v interface{}
 	nv := (*interface{})(nil)
@@ -410,7 +410,7 @@ func addNilInterfaceTests() {
 	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 }
 
-func addMapTests() {
+func addMapDumpTests() {
 	// Map with string keys and int vals.
 	v := map[string]int{"one": 1}
 	nv := (*map[string]int)(nil)
@@ -457,7 +457,7 @@ func addMapTests() {
 	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 }
 
-func addStructTests() {
+func addStructDumpTests() {
 	// Struct with primitives.
 	type s1 struct {
 		a int8
@@ -520,7 +520,7 @@ func addStructTests() {
 	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 }
 
-func addUintptrTests() {
+func addUintptrDumpTests() {
 	// Null pointer.
 	v := uintptr(0)
 	pv := &v
@@ -547,7 +547,7 @@ func addUintptrTests() {
 	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
 }
 
-func addUnsafePointerTests() {
+func addUnsafePointerDumpTests() {
 	// Null pointer.
 	v := unsafe.Pointer(uintptr(0))
 	nv := (*unsafe.Pointer)(nil)
@@ -575,7 +575,7 @@ func addUnsafePointerTests() {
 	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 }
 
-func addChanTests() {
+func addChanDumpTests() {
 	// Nil channel.
 	var v chan int
 	pv := &v
@@ -601,9 +601,9 @@ func addChanTests() {
 	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
 }
 
-func addFuncTests() {
+func addFuncDumpTests() {
 	// Function with no params and no returns.
-	v := addIntTests
+	v := addIntDumpTests
 	nv := (*func())(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
@@ -644,7 +644,7 @@ func addFuncTests() {
 	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 }
 
-func addCircularTests() {
+func addCircularDumpTests() {
 	// Struct that is circular through self referencing.
 	type circular struct {
 		c *circular
@@ -709,6 +709,24 @@ func addCircularTests() {
 
 // TestDump executes all of the tests described by dumpTests.
 func TestDump(t *testing.T) {
+	// Setup tests.
+	addIntDumpTests()
+	addUintDumpTests()
+	addBoolDumpTests()
+	addFloatDumpTests()
+	addComplexDumpTests()
+	addArrayDumpTests()
+	addSliceDumpTests()
+	addStringDumpTests()
+	addNilInterfaceDumpTests()
+	addMapDumpTests()
+	addStructDumpTests()
+	addUintptrDumpTests()
+	addUnsafePointerDumpTests()
+	addChanDumpTests()
+	addFuncDumpTests()
+	addCircularDumpTests()
+
 	t.Logf("Running %d tests", len(dumpTests))
 	for i, test := range dumpTests {
 		buf := new(bytes.Buffer)
@@ -719,24 +737,4 @@ func TestDump(t *testing.T) {
 			continue
 		}
 	}
-}
-
-// Setup tests.
-func init() {
-	addIntTests()
-	addUintTests()
-	addBoolTests()
-	addFloatTests()
-	addComplexTests()
-	addArrayTests()
-	addSliceTests()
-	addStringTests()
-	addNilInterfaceTests()
-	addMapTests()
-	addStructTests()
-	addUintptrTests()
-	addUnsafePointerTests()
-	addChanTests()
-	addFuncTests()
-	addCircularTests()
 }
