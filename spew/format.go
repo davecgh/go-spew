@@ -33,7 +33,6 @@ const supportedFlags = "0-+# "
 // in standard fmt package printing calls.
 type formatState struct {
 	value    interface{}
-	buffer   bytes.Buffer
 	depth    int
 	pointers map[uintptr]int // Holds map of points and depth they were seen at
 	fs       fmt.State
@@ -88,9 +87,9 @@ func (f *formatState) constructOrigFormat(verb rune) (format string) {
 
 // formatPtr handles formatting of pointers by indirecting them as necessary.
 func (f *formatState) formatPtr(v reflect.Value) {
-	// Display nil if top level poiner is nil.
+	// Display nil if top level pointer is nil.
 	if v.IsNil() {
-		f.buffer.Write(nilAngleBytes)
+		f.fs.Write(nilAngleBytes)
 		return
 	}
 
@@ -139,29 +138,29 @@ func (f *formatState) formatPtr(v reflect.Value) {
 	}
 
 	// Display indirection level.
-	f.buffer.Write(openAngleBytes)
-	f.buffer.WriteString(strings.Repeat("*", indirects))
-	f.buffer.Write(closeAngleBytes)
+	f.fs.Write(openAngleBytes)
+	f.fs.Write([]byte(strings.Repeat("*", indirects)))
+	f.fs.Write(closeAngleBytes)
 
 	// Display pointer information depending on flags.
 	if plusSyntax && (len(pointerChain) > 0) {
-		f.buffer.Write(openParenBytes)
+		f.fs.Write(openParenBytes)
 		for i, addr := range pointerChain {
 			if i > 0 {
-				f.buffer.Write(pointerChainBytes)
+				f.fs.Write(pointerChainBytes)
 			}
-			printHexPtr(&f.buffer, addr)
+			printHexPtr(f.fs, addr)
 		}
-		f.buffer.Write(closeParenBytes)
+		f.fs.Write(closeParenBytes)
 	}
 
 	// Display dereferenced value.
 	switch {
 	case nilFound == true:
-		f.buffer.Write(nilAngleBytes)
+		f.fs.Write(nilAngleBytes)
 
 	case cycleFound == true:
-		f.buffer.Write(circularShortBytes)
+		f.fs.Write(circularShortBytes)
 
 	default:
 		f.format(ve)
@@ -173,12 +172,12 @@ func (f *formatState) formatPtr(v reflect.Value) {
 // dealing with and formats it appropriately.  It is a recursive function,
 // however circular data structures are detected and handled properly.
 func (f *formatState) format(v reflect.Value) {
-	// Call error/Stringer interfaces if they exist and the handle methods
+	// Call Stringer/error interfaces if they exist and the handle methods
 	// flag is enabled.
 	kind := v.Kind()
 	if !f.cs.DisableMethods {
 		if (kind != reflect.Invalid) && (kind != reflect.Interface) {
-			if handled := handleMethods(f.cs, &f.buffer, v); handled {
+			if handled := handleMethods(f.cs, f.fs, v); handled {
 				return
 			}
 		}
@@ -186,111 +185,111 @@ func (f *formatState) format(v reflect.Value) {
 
 	switch kind {
 	case reflect.Invalid:
-		f.buffer.Write(invalidAngleBytes)
+		f.fs.Write(invalidAngleBytes)
 
 	case reflect.Bool:
-		printBool(&f.buffer, v.Bool())
+		printBool(f.fs, v.Bool())
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		printInt(&f.buffer, v.Int())
+		printInt(f.fs, v.Int())
 
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		printUint(&f.buffer, v.Uint())
+		printUint(f.fs, v.Uint())
 
 	case reflect.Float32:
-		printFloat(&f.buffer, v.Float(), 32)
+		printFloat(f.fs, v.Float(), 32)
 
 	case reflect.Float64:
-		printFloat(&f.buffer, v.Float(), 64)
+		printFloat(f.fs, v.Float(), 64)
 
 	case reflect.Complex64:
-		printComplex(&f.buffer, v.Complex(), 32)
+		printComplex(f.fs, v.Complex(), 32)
 
 	case reflect.Complex128:
-		printComplex(&f.buffer, v.Complex(), 64)
+		printComplex(f.fs, v.Complex(), 64)
 
 	case reflect.Array, reflect.Slice:
-		f.buffer.WriteRune('[')
+		f.fs.Write(openBracketBytes)
 		f.depth++
 		if (f.cs.MaxDepth != 0) && (f.depth > f.cs.MaxDepth) {
-			f.buffer.Write(maxShortBytes)
+			f.fs.Write(maxShortBytes)
 		} else {
 			numEntries := v.Len()
 			for i := 0; i < numEntries; i++ {
 				if i > 0 {
-					f.buffer.WriteRune(' ')
+					f.fs.Write(spaceBytes)
 				}
 				f.format(unpackValue(v.Index(i)))
 			}
 		}
 		f.depth--
-		f.buffer.WriteRune(']')
+		f.fs.Write(closeBracketBytes)
 
 	case reflect.String:
-		f.buffer.WriteString(v.String())
+		f.fs.Write([]byte(v.String()))
 
 	case reflect.Interface:
 		// Do nothing.  We should never get here due to unpackValue calls
 
 	case reflect.Map:
-		f.buffer.Write(openMapBytes)
+		f.fs.Write(openMapBytes)
 		f.depth++
 		if (f.cs.MaxDepth != 0) && (f.depth > f.cs.MaxDepth) {
-			f.buffer.Write(maxShortBytes)
+			f.fs.Write(maxShortBytes)
 		} else {
 			keys := v.MapKeys()
 			for i, key := range keys {
 				if i > 0 {
-					f.buffer.WriteRune(' ')
+					f.fs.Write(spaceBytes)
 				}
 				f.format(unpackValue(key))
-				f.buffer.WriteRune(':')
+				f.fs.Write(colonBytes)
 				f.format(unpackValue(v.MapIndex(key)))
 			}
 		}
 		f.depth--
-		f.buffer.Write(closeMapBytes)
+		f.fs.Write(closeMapBytes)
 
 	case reflect.Ptr:
 		f.formatPtr(v)
 
 	case reflect.Struct:
 		numFields := v.NumField()
-		f.buffer.WriteRune('{')
+		f.fs.Write(openBraceBytes)
 		f.depth++
 		if (f.cs.MaxDepth != 0) && (f.depth > f.cs.MaxDepth) {
-			f.buffer.Write(maxShortBytes)
+			f.fs.Write(maxShortBytes)
 		} else {
 			vt := v.Type()
 			for i := 0; i < numFields; i++ {
 				if i > 0 {
-					f.buffer.WriteRune(' ')
+					f.fs.Write(spaceBytes)
 				}
 				vtf := vt.Field(i)
 				if f.fs.Flag('+') {
-					f.buffer.WriteString(vtf.Name)
-					f.buffer.WriteRune(':')
+					f.fs.Write([]byte(vtf.Name))
+					f.fs.Write(colonBytes)
 				}
 				f.format(unpackValue(v.Field(i)))
 			}
 		}
 		f.depth--
-		f.buffer.WriteRune('}')
+		f.fs.Write(closeBraceBytes)
 
 	case reflect.Uintptr:
-		printHexPtr(&f.buffer, uintptr(v.Uint()))
+		printHexPtr(f.fs, uintptr(v.Uint()))
 
 	case reflect.UnsafePointer, reflect.Chan, reflect.Func:
-		printHexPtr(&f.buffer, v.Pointer())
+		printHexPtr(f.fs, v.Pointer())
 
 	// There were not any other types at the time this code was written, but
 	// fall back to letting the default fmt package handle it if any get added.
 	default:
 		format := f.buildDefaultFormat()
 		if v.CanInterface() {
-			f.buffer.WriteString(fmt.Sprintf(format, v.Interface()))
+			fmt.Fprintf(f.fs, format, v.Interface())
 		} else {
-			f.buffer.WriteString(fmt.Sprintf(format, v.String()))
+			fmt.Fprintf(f.fs, format, v.String())
 		}
 	}
 }
@@ -311,9 +310,7 @@ func (f *formatState) Format(fs fmt.State, verb rune) {
 		fmt.Fprint(fs, string(nilAngleBytes))
 		return
 	}
-
 	f.format(reflect.ValueOf(f.value))
-	f.buffer.WriteTo(fs)
 }
 
 // newFormatter is a helper function to consolidate the logic from the various
