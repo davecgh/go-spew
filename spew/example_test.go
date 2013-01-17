@@ -160,7 +160,7 @@ func ExampleSpewState_Dump() {
 	// example.
 
 	// A SpewState does not need initialization.
-	ss := new(spew.SpewState) // or var ss spew.SpewState
+	ss := new(spew.SpewState)  // or var ss spew.SpewState
 	ss2 := new(spew.SpewState) // or var ss2 spew.SpewState
 
 	// Modify the indent level of the first SpewState only.
@@ -204,7 +204,7 @@ func ExampleSpewState_Printf() {
 	// example.
 
 	// A SpewState does not need initialization.
-	ss := new(spew.SpewState) // or var ss spew.SpewState
+	ss := new(spew.SpewState)  // or var ss spew.SpewState
 	ss2 := new(spew.SpewState) // or var ss2 spew.SpewState
 
 	// Modify the method handling of the first SpewState only.

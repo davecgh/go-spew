@@ -123,7 +123,7 @@ func convertArgs(args []interface{}) (formatters []interface{}) {
 // just declaring a SpewState variable, is  sufficient to initialilize a
 // SpewState using the default configuration options.
 type SpewState struct {
-	cs     *ConfigState
+	cs *ConfigState
 }
 
 // Config returns a pointer to the active ConfigState for the SpewState

@@ -632,7 +632,7 @@ func addFuncDumpTests() {
 	var v3 = func(i int, s string) (b bool, err error) {
 		return true, nil
 	}
-	nv3 := (*func(int, string)(bool, error))(nil)
+	nv3 := (*func(int, string) (bool, error))(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
 	pv3Addr := fmt.Sprintf("%p", &pv3)
