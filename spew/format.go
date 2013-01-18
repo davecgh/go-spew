@@ -32,11 +32,12 @@ const supportedFlags = "0-+# "
 // be used to get a new Formatter which can be used directly as arguments
 // in standard fmt package printing calls.
 type formatState struct {
-	value    interface{}
-	depth    int
-	pointers map[uintptr]int // Holds map of points and depth they were seen at
-	fs       fmt.State
-	cs       *ConfigState
+	value          interface{}
+	fs             fmt.State
+	depth          int
+	pointers       map[uintptr]int
+	ignoreNextType bool
+	cs             *ConfigState
 }
 
 // buildDefaultFormat recreates the original format string without precision
@@ -85,10 +86,24 @@ func (f *formatState) constructOrigFormat(verb rune) (format string) {
 	return format
 }
 
+// unpackValue returns values inside of non-nil interfaces when possible and
+// ensures that types for values which have been unpacked from an interface
+// are displayed when the show types flag is also set.
+// This is useful for data types like structs, arrays, slices, and maps which
+// can contain varying types packed inside an interface.
+func (f *formatState) unpackValue(v reflect.Value) reflect.Value {
+	if v.Kind() == reflect.Interface && !v.IsNil() {
+		f.ignoreNextType = false
+		v = v.Elem()
+	}
+	return v
+}
+
 // formatPtr handles formatting of pointers by indirecting them as necessary.
 func (f *formatState) formatPtr(v reflect.Value) {
 	// Display nil if top level pointer is nil.
-	if v.IsNil() {
+	showTypes := f.fs.Flag('#')
+	if v.IsNil() && (!showTypes || f.ignoreNextType) {
 		f.fs.Write(nilAngleBytes)
 		return
 	}
@@ -100,8 +115,6 @@ func (f *formatState) formatPtr(v reflect.Value) {
 			delete(f.pointers, k)
 		}
 	}
-
-	plusSyntax := f.fs.Flag('+')
 
 	// Keep list of all dereferenced pointers to possibly show later.
 	pointerChain := make([]uintptr, 0)
@@ -123,6 +136,7 @@ func (f *formatState) formatPtr(v reflect.Value) {
 		pointerChain = append(pointerChain, addr)
 		if pd, ok := f.pointers[addr]; ok && pd < f.depth {
 			cycleFound = true
+			indirects--
 			break
 		}
 		f.pointers[addr] = f.depth
@@ -137,13 +151,23 @@ func (f *formatState) formatPtr(v reflect.Value) {
 		}
 	}
 
-	// Display indirection level.
-	f.fs.Write(openAngleBytes)
-	f.fs.Write([]byte(strings.Repeat("*", indirects)))
-	f.fs.Write(closeAngleBytes)
+	// Display type or indirection level depending on flags.
+	if showTypes && !f.ignoreNextType {
+		f.fs.Write(openParenBytes)
+		f.fs.Write(bytes.Repeat(asteriskBytes, indirects))
+		f.fs.Write([]byte(ve.Type().String()))
+		f.fs.Write(closeParenBytes)
+	} else {
+		if nilFound || cycleFound {
+			indirects += strings.Count(ve.Type().String(), "*")
+		}
+		f.fs.Write(openAngleBytes)
+		f.fs.Write([]byte(strings.Repeat("*", indirects)))
+		f.fs.Write(closeAngleBytes)
+	}
 
 	// Display pointer information depending on flags.
-	if plusSyntax && (len(pointerChain) > 0) {
+	if f.fs.Flag('+') && (len(pointerChain) > 0) {
 		f.fs.Write(openParenBytes)
 		for i, addr := range pointerChain {
 			if i > 0 {
@@ -163,6 +187,7 @@ func (f *formatState) formatPtr(v reflect.Value) {
 		f.fs.Write(circularShortBytes)
 
 	default:
+		f.ignoreNextType = true
 		f.format(ve)
 	}
 }
@@ -172,9 +197,23 @@ func (f *formatState) formatPtr(v reflect.Value) {
 // dealing with and formats it appropriately.  It is a recursive function,
 // however circular data structures are detected and handled properly.
 func (f *formatState) format(v reflect.Value) {
+	// Handle pointers specially.
+	kind := v.Kind()
+	if kind == reflect.Ptr {
+		f.formatPtr(v)
+		return
+	}
+
+	// Print type information unless already handled elsewhere.
+	if !f.ignoreNextType && f.fs.Flag('#') {
+		f.fs.Write(openParenBytes)
+		f.fs.Write([]byte(v.Type().String()))
+		f.fs.Write(closeParenBytes)
+	}
+	f.ignoreNextType = false
+
 	// Call Stringer/error interfaces if they exist and the handle methods
 	// flag is enabled.
-	kind := v.Kind()
 	if !f.cs.DisableMethods {
 		if (kind != reflect.Invalid) && (kind != reflect.Interface) {
 			if handled := handleMethods(f.cs, f.fs, v); handled {
@@ -219,7 +258,8 @@ func (f *formatState) format(v reflect.Value) {
 				if i > 0 {
 					f.fs.Write(spaceBytes)
 				}
-				f.format(unpackValue(v.Index(i)))
+				f.ignoreNextType = true
+				f.format(f.unpackValue(v.Index(i)))
 			}
 		}
 		f.depth--
@@ -230,6 +270,10 @@ func (f *formatState) format(v reflect.Value) {
 
 	case reflect.Interface:
 		// Do nothing.  We should never get here due to unpackValue calls
+
+	case reflect.Ptr:
+		// Do nothing.  We should never get here since pointers have already
+		// been handled above.
 
 	case reflect.Map:
 		f.fs.Write(openMapBytes)
@@ -242,16 +286,15 @@ func (f *formatState) format(v reflect.Value) {
 				if i > 0 {
 					f.fs.Write(spaceBytes)
 				}
-				f.format(unpackValue(key))
+				f.ignoreNextType = true
+				f.format(f.unpackValue(key))
 				f.fs.Write(colonBytes)
-				f.format(unpackValue(v.MapIndex(key)))
+				f.ignoreNextType = true
+				f.format(f.unpackValue(v.MapIndex(key)))
 			}
 		}
 		f.depth--
 		f.fs.Write(closeMapBytes)
-
-	case reflect.Ptr:
-		f.formatPtr(v)
 
 	case reflect.Struct:
 		numFields := v.NumField()
@@ -266,11 +309,11 @@ func (f *formatState) format(v reflect.Value) {
 					f.fs.Write(spaceBytes)
 				}
 				vtf := vt.Field(i)
-				if f.fs.Flag('+') {
+				if f.fs.Flag('+') || f.fs.Flag('#') {
 					f.fs.Write([]byte(vtf.Name))
 					f.fs.Write(colonBytes)
 				}
-				f.format(unpackValue(v.Field(i)))
+				f.format(f.unpackValue(v.Field(i)))
 			}
 		}
 		f.depth--
@@ -299,17 +342,21 @@ func (f *formatState) format(v reflect.Value) {
 func (f *formatState) Format(fs fmt.State, verb rune) {
 	f.fs = fs
 
-	// Use standard formatting for verbs that are not v or #v.
-	if (verb != 'v') || (verb == 'v' && fs.Flag('#')) {
+	// Use standard formatting for verbs that are not v.
+	if verb != 'v' {
 		format := f.constructOrigFormat(verb)
 		fmt.Fprintf(fs, format, f.value)
 		return
 	}
 
 	if f.value == nil {
-		fmt.Fprint(fs, string(nilAngleBytes))
+		if fs.Flag('#') {
+			fs.Write(interfaceBytes)
+		}
+		fs.Write(nilAngleBytes)
 		return
 	}
+
 	f.format(reflect.ValueOf(f.value))
 }
 
@@ -327,11 +374,12 @@ interface.  As a result, it integrates cleanly with standard fmt package
 printing functions.  The formatter is useful for inline printing of smaller data
 types similar to the standard %v format specifier.
 
-The custom formatter only responds to the %v and %+v verb combinations.  Any
-other variations such as %x, %q, and %#v will be sent to the the standard fmt
-package for formatting.  In addition, the custom formatter ignores the width and
-precision arguments (however they will still work on the format specifiers not
-handled by the custom formatter).
+The custom formatter only responds to the %v (most compact), %+v (adds pointer
+addresses), %#v (adds types), or %#+v (adds types and pointer addresses) verb
+combinations.  Any other verbs such as %x and %q will be sent to the the
+standard fmt package for formatting.  In addition, the custom formatter ignores
+the width and precision arguments (however they will still work on the format
+specifiers not handled by the custom formatter).
 
 Typically this function shouldn't be called directly.  It is much easier to make
 use of the custom formatter by calling one of the convenience functions such as

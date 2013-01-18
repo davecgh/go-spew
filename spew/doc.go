@@ -51,10 +51,13 @@ information use Dump or Fdump:
 	spew.Fdump(someWriter, myVar1, myVar2, ...)
 
 Alternatively, if you would prefer to use format strings with a compacted inline
-printing style, use the convenience wrappers Printf, Fprintf, etc with either
-%v (most compact) or %+v (adds pointer addresses):
+printing style, use the convenience wrappers Printf, Fprintf, etc with
+%v (most compact), %+v (adds pointer addresses), %#v (adds types), or
+%#+v (adds types and pointer addresses):
 	spew.Printf("myVar1: %v -- myVar2: %+v", myVar1, myVar2)
+	spew.Printf("myVar3: %#v -- myVar4: %#+v", myVar3, myVar4)
 	spew.Fprintf(someWriter, "myVar1: %v -- myVar2: %+v", myVar1, myVar2)
+	spew.Fprintf(someWriter, "myVar3: %#v -- myVar4: %#+v", myVar3, myVar4)
 
 Configuration Options
 
@@ -118,31 +121,40 @@ so that it integrates cleanly with standard fmt package printing functions. The
 formatter is useful for inline printing of smaller data types similar to the
 standard %v format specifier.
 
-The spew formatter only responds to the %v and %+v verb combinations.  Any other
-variations such as %x, %q, and %#v will be sent to the the standard fmt package
-for formatting.  In addition, the spew formatter ignores the width and precision
-arguments (however they will still work on the format specifiers spew does not
-handle).
+The custom formatter only responds to the %v (most compact), %+v (adds pointer
+addresses), %#v (adds types), or %#+v (adds types and pointer addresses) verb
+combinations.  Any other verbs such as %x and %q will be sent to the the
+standard fmt package for formatting.  In addition, the custom formatter ignores
+the width and precision arguments (however they will still work on the format
+specifiers not handled by the custom formatter).
 
 Custom Formatter Usage
 
 The simplest way to make use of the spew custom formatter is to call one of the
 convenience functions such as spew.Printf, spew.Println, or spew.Printf.  The
-functions have the exact same syntax you are most likely already familiar with:
+functions have syntax you are most likely already familiar with:
 
 	spew.Printf("myVar1: %v -- myVar2: %+v", myVar1, myVar2)
+	spew.Printf("myVar3: %#v -- myVar4: %#+v", myVar3, myVar4)
 	spew.Println(myVar, myVar2)
 	spew.Fprintf(os.Stderr, "myVar1: %v -- myVar2: %+v", myVar1, myVar2)
+	spew.Fprintf(os.Stderr, "myVar3: %#v -- myVar4: %#+v", myVar3, myVar4)
 
 See the Index for the full list convenience functions.
 
 Sample Formatter Output
 
-Double pointer to a uint8 via %v:
-	<**>5
+Double pointer to a uint8:
+	  %v: <**>5
+	 %+v: <**>(0xf8400420d0->0xf8400420c8)5
+	 %#v: (**uint8)5
+	%#+v: (**uint8)(0xf8400420d0->0xf8400420c8)5
 
-Circular struct with a uint8 field and a pointer to itself via %+v:
-	{ui8:1 c:<*>(0xf84002d200){ui8:1 c:<*>(0xf84002d200)<shown>}}
+Pointer to circular struct with a uint8 field and a pointer to itself:
+	  %v: <*>{1 <*><shown>}
+	 %+v: <*>(0xf84003e260){ui8:1 c:<*>(0xf84003e260)<shown>}
+	 %#v: (*main.circular){ui8:(uint8)1 c:(*main.circular)<shown>}
+	%#+v: (*main.circular)(0xf84003e260){ui8:(uint8)1 c:(*main.circular)(0xf84003e260)<shown>}
 
 See the Printf example for details on the setup of variables being shown
 here.

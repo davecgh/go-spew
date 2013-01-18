@@ -45,6 +45,16 @@ func (d *dumpState) pad() {
 	d.w.Write(bytes.Repeat([]byte(d.cs.Indent), d.depth))
 }
 
+// unpackValue returns values inside of non-nil interfaces when possible.
+// This is useful for data types like structs, arrays, slices, and maps which
+// can contain varying types packed inside an interface.
+func (d *dumpState) unpackValue(v reflect.Value) reflect.Value {
+	if v.Kind() == reflect.Interface && !v.IsNil() {
+		v = v.Elem()
+	}
+	return v
+}
+
 // dumpPtr handles formatting of pointers by indirecting them as necessary.
 func (d *dumpState) dumpPtr(v reflect.Value) {
 	// Remove pointers at or below the current depth from map used to detect
@@ -191,7 +201,7 @@ func (d *dumpState) dump(v reflect.Value) {
 		} else {
 			numEntries := v.Len()
 			for i := 0; i < numEntries; i++ {
-				d.dump(unpackValue(v.Index(i)))
+				d.dump(d.unpackValue(v.Index(i)))
 				if i < (numEntries - 1) {
 					d.w.Write(commaNewlineBytes)
 				} else {
@@ -223,10 +233,10 @@ func (d *dumpState) dump(v reflect.Value) {
 			numEntries := v.Len()
 			keys := v.MapKeys()
 			for i, key := range keys {
-				d.dump(unpackValue(key))
+				d.dump(d.unpackValue(key))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextPad = true
-				d.dump(unpackValue(v.MapIndex(key)))
+				d.dump(d.unpackValue(v.MapIndex(key)))
 				if i < (numEntries - 1) {
 					d.w.Write(commaNewlineBytes)
 				} else {
@@ -253,7 +263,7 @@ func (d *dumpState) dump(v reflect.Value) {
 				d.w.Write([]byte(vtf.Name))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextPad = true
-				d.dump(unpackValue(v.Field(i)))
+				d.dump(d.unpackValue(v.Field(i)))
 				if i < (numFields - 1) {
 					d.w.Write(commaNewlineBytes)
 				} else {
@@ -289,6 +299,7 @@ func fdump(cs *ConfigState, w io.Writer, a ...interface{}) {
 	for _, arg := range a {
 		if arg == nil {
 			w.Write(interfaceBytes)
+			w.Write(spaceBytes)
 			w.Write(nilAngleBytes)
 			w.Write(newlineBytes)
 			continue

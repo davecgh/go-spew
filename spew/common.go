@@ -70,7 +70,7 @@ var (
 	iBytes                = []byte("i")
 	trueBytes             = []byte("true")
 	falseBytes            = []byte("false")
-	interfaceBytes        = []byte("(interface {}) ")
+	interfaceBytes        = []byte("(interface {})")
 	commaNewlineBytes     = []byte(",\n")
 	newlineBytes          = []byte("\n")
 	openBraceBytes        = []byte("{")
@@ -101,16 +101,6 @@ var (
 
 // hexDigits is used to map a decimal value to a hex digit.
 var hexDigits = "0123456789abcdef"
-
-// unpackValue returns values inside of non-nil interfaces when possible.
-// This is useful for data types like structs, arrays, slices, and maps which
-// can contain varying types packed inside an interface.
-func unpackValue(v reflect.Value) reflect.Value {
-	if v.Kind() == reflect.Interface && !v.IsNil() {
-		v = v.Elem()
-	}
-	return v
-}
 
 // catchPanic handles any panics that might occur during the handleMethods
 // calls.
