@@ -39,12 +39,15 @@ spew.Fdump(someWriter, myVar1, myVar2, ...)
 ```
 
 Alternatively, if you would prefer to use format strings with a compacted inline
-printing style, use the convenience wrappers Printf, Fprintf, etc with either
-%v (most compact) or %+v (adds pointer addresses):
+printing style, use the convenience wrappers Printf, Fprintf, etc with %v (most
+compact), %+v (adds pointer addresses), %#v (adds types), or %#+v (adds types
+and pointer addresses): 
 
 ```Go
 spew.Printf("myVar1: %v -- myVar2: %+v", myVar1, myVar2)
+spew.Printf("myVar3: %#v -- myVar4: %#+v", myVar3, myVar4)
 spew.Fprintf(someWriter, "myVar1: %v -- myVar2: %+v", myVar1, myVar2)
+spew.Fprintf(someWriter, "myVar3: %#v -- myVar4: %#+v", myVar3, myVar4)
 ```
 
 ## Sample Dump Output
@@ -63,32 +66,47 @@ spew.Fprintf(someWriter, "myVar1: %v -- myVar2: %+v", myVar1, myVar2)
 
 ## Sample Formatter Output
 
-Double pointer to a uint8 via %v:
+Double pointer to a uint8:
 ```
-	<**>5
+	  %v: <**>5
+	 %+v: <**>(0xf8400420d0->0xf8400420c8)5
+	 %#v: (**uint8)5
+	%#+v: (**uint8)(0xf8400420d0->0xf8400420c8)5
 ```
 
-Circular struct with a uint8 field and a pointer to itself via %+v:
+Pointer to circular struct with a uint8 field and a pointer to itself:
 ```
-	{ui8:1 c:<*>(0xf84002d200){ui8:1 c:<*>(0xf84002d200)<shown>}}
+	  %v: <*>{1 <*><shown>}
+	 %+v: <*>(0xf84003e260){ui8:1 c:<*>(0xf84003e260)<shown>}
+	 %#v: (*main.circular){ui8:(uint8)1 c:(*main.circular)<shown>}
+	%#+v: (*main.circular)(0xf84003e260){ui8:(uint8)1 c:(*main.circular)(0xf84003e260)<shown>}
 ```
 
 ## Configuration Options
 
+Configuration of spew is handled by fields in the ConfigState type. For
+convenience, all of the top-level functions use a global state available via the
+spew.Config global.
+
+It is also possible to create a SpewState instance which provides a unique
+ConfigState accessible via the Config method. The methods of SpewState are
+equivalent to the top-level functions. This allows concurrent configuration
+options. See the SpewState documentation for more details.
+
 ```
-* spew.Config.MaxDepth
+* MaxDepth
 	Maximum number of levels to descend into nested data structures.
 	There is no limit by default.
 
-* spew.Config.Indent
+* Indent
 	String to use for each indentation level for Dump functions.
 	It is a single space by default.  A popular alternative is "\t".
 
-* spew.Config.DisableMethods
+* DisableMethods
 	Disables invocation of error and Stringer interface methods.
 	Method invocation is enabled by default.
 
-* spew.Config.DisablePointerMethods
+* DisablePointerMethods
 	Disables invocation of error and Stringer interface methods on types
 	which only accept pointer receivers from non-pointer variables.
 	Pointer method invocation is enabled by default.
