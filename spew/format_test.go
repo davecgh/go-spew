@@ -25,8 +25,10 @@ base test element are also tested to ensure proper indirection across all types.
 - Standard complex64 and complex128
 - Array containing standard ints
 - Array containing type with custom formatter on pointer receiver only
+- Array containing interfaces
 - Slice containing standard float32 values
 - Slice containing type with custom formatter on pointer receiver only
+- Slice containing interfaces
 - Standard string
 - Nil interface
 - Map with string keys and int vals
