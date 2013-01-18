@@ -349,6 +349,23 @@ func addArrayDumpTests() {
 	addDumpTest(pv2, "(*[3]"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**[3]"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
 	addDumpTest(nv2, "(*[3]"+v2t+")(<nil>)\n")
+
+	// Array containing interfaces.
+	v3 := [3]interface{}{"one", int(2), uint(3)}
+	nv3 := (*[3]interface{})(nil)
+	pv3 := &v3
+	v3Addr := fmt.Sprintf("%p", pv3)
+	pv3Addr := fmt.Sprintf("%p", &pv3)
+	v3t := "[3]interface {}"
+	v3t2 := "string"
+	v3t3 := "int"
+	v3t4 := "uint"
+	v3s := "{\n (" + v3t2 + ") \"one\",\n (" + v3t3 + ") 2,\n (" + v3t4 +
+		") 3\n}"
+	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
+	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
+	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
+	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 }
 
 func addSliceDumpTests() {
@@ -378,6 +395,23 @@ func addSliceDumpTests() {
 	addDumpTest(pv2, "(*[]"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**[]"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
 	addDumpTest(nv2, "(*[]"+v2t+")(<nil>)\n")
+
+	// Slice containing interfaces.
+	v3 := []interface{}{"one", int(2), uint(3)}
+	nv3 := (*[]interface{})(nil)
+	pv3 := &v3
+	v3Addr := fmt.Sprintf("%p", pv3)
+	pv3Addr := fmt.Sprintf("%p", &pv3)
+	v3t := "[]interface {}"
+	v3t2 := "string"
+	v3t3 := "int"
+	v3t4 := "uint"
+	v3s := "{\n (" + v3t2 + ") \"one\",\n (" + v3t3 + ") 2,\n (" + v3t4 +
+		") 3\n}"
+	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
+	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
+	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
+	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
 }
 
 func addStringDumpTests() {
