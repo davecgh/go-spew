@@ -26,18 +26,18 @@ import (
 )
 
 // spewFunc is used to identify which public function of the spew package or
-// SpewState a test applies to.
+// ConfigState a test applies to.
 type spewFunc int
 
 const (
-	fSSFdump spewFunc = iota
-	fSSFprint
-	fSSFprintf
-	fSSFprintln
-	fSSPrint
-	fSSPrintln
-	fSSErrorf
-	fSSNewFormatter
+	fCSFdump spewFunc = iota
+	fCSFprint
+	fCSFprintf
+	fCSFprintln
+	fCSPrint
+	fCSPrintln
+	fCSErrorf
+	fCSNewFormatter
 	fErrorf
 	fFprint
 	fFprintln
@@ -47,14 +47,14 @@ const (
 
 // Map of spewFunc values to names for pretty printing.
 var spewFuncStrings = map[spewFunc]string{
-	fSSFdump:        "SpewState.Fdump",
-	fSSFprint:       "SpewState.Fprint",
-	fSSFprintf:      "SpewState.Fprintf",
-	fSSFprintln:     "SpewState.Fprintln",
-	fSSPrint:        "SpewState.Print",
-	fSSPrintln:      "SpewState.Println",
-	fSSErrorf:       "SpewState.Errorf",
-	fSSNewFormatter: "SpewState.NewFormatter",
+	fCSFdump:        "ConfigState.Fdump",
+	fCSFprint:       "ConfigState.Fprint",
+	fCSFprintf:      "ConfigState.Fprintf",
+	fCSFprintln:     "ConfigState.Fprintln",
+	fCSPrint:        "ConfigState.Print",
+	fCSPrintln:      "ConfigState.Println",
+	fCSErrorf:       "ConfigState.Errorf",
+	fCSNewFormatter: "ConfigState.NewFormatter",
 	fErrorf:         "spew.Errorf",
 	fFprint:         "spew.Fprint",
 	fFprintln:       "spew.Fprintln",
@@ -70,7 +70,7 @@ func (f spewFunc) String() string {
 }
 
 // spewTest is used to describe a test to be performed against the public
-// functions of the spew package or SpewState.
+// functions of the spew package or ConfigState.
 type spewTest struct {
 	f      spewFunc
 	format string
@@ -79,20 +79,20 @@ type spewTest struct {
 }
 
 // spewTests houses the tests to be performed against the public functions of
-// the spew package and SpewState.
+// the spew package and ConfigState.
 //
 // These tests are only intended to ensure the public functions are exercised
 // and are intentionally not exhaustive of types.  The exhaustive type
 // tests are handled in the dump and format tests.
 var spewTests = []spewTest{
-	{fSSFdump, "", int8(127), "(int8) 127\n"},
-	{fSSFprint, "", int16(32767), "32767"},
-	{fSSFprintf, "%v", int32(2147483647), "2147483647"},
-	{fSSFprintln, "", int(2147483647), "2147483647\n"},
-	{fSSPrint, "", int64(9223372036854775807), "9223372036854775807"},
-	{fSSPrintln, "", uint8(255), "255\n"},
-	{fSSErrorf, "%#v", uint16(65535), "(uint16)65535"},
-	{fSSNewFormatter, "%v", uint32(4294967295), "4294967295"},
+	{fCSFdump, "", int8(127), "(int8) 127\n"},
+	{fCSFprint, "", int16(32767), "32767"},
+	{fCSFprintf, "%v", int32(2147483647), "2147483647"},
+	{fCSFprintln, "", int(2147483647), "2147483647\n"},
+	{fCSPrint, "", int64(9223372036854775807), "9223372036854775807"},
+	{fCSPrintln, "", uint8(255), "255\n"},
+	{fCSErrorf, "%#v", uint16(65535), "(uint16)65535"},
+	{fCSNewFormatter, "%v", uint32(4294967295), "4294967295"},
 	{fErrorf, "%v", uint64(18446744073709551615), "18446744073709551615"},
 	{fFprint, "", float32(3.14), "3.14"},
 	{fFprintln, "", float64(6.28), "6.28\n"},
@@ -121,46 +121,46 @@ func redirStdout(f func()) ([]byte, error) {
 
 // TestSpew executes all of the tests described by spewTests.
 func TestSpew(t *testing.T) {
-	ss := new(spew.SpewState)
+	scs := spew.NewDefaultConfig()
 
 	t.Logf("Running %d tests", len(spewTests))
 	for i, test := range spewTests {
 		buf := new(bytes.Buffer)
 		switch test.f {
-		case fSSFdump:
-			ss.Fdump(buf, test.in)
+		case fCSFdump:
+			scs.Fdump(buf, test.in)
 
-		case fSSFprint:
-			ss.Fprint(buf, test.in)
+		case fCSFprint:
+			scs.Fprint(buf, test.in)
 
-		case fSSFprintf:
-			ss.Fprintf(buf, test.format, test.in)
+		case fCSFprintf:
+			scs.Fprintf(buf, test.format, test.in)
 
-		case fSSFprintln:
-			ss.Fprintln(buf, test.in)
+		case fCSFprintln:
+			scs.Fprintln(buf, test.in)
 
-		case fSSPrint:
-			b, err := redirStdout(func() { ss.Print(test.in) })
+		case fCSPrint:
+			b, err := redirStdout(func() { scs.Print(test.in) })
 			if err != nil {
 				t.Errorf("%v #%d %v", test.f, i, err)
 				continue
 			}
 			buf.Write(b)
 
-		case fSSPrintln:
-			b, err := redirStdout(func() { ss.Println(test.in) })
+		case fCSPrintln:
+			b, err := redirStdout(func() { scs.Println(test.in) })
 			if err != nil {
 				t.Errorf("%v #%d %v", test.f, i, err)
 				continue
 			}
 			buf.Write(b)
 
-		case fSSErrorf:
-			err := ss.Errorf(test.format, test.in)
+		case fCSErrorf:
+			err := scs.Errorf(test.format, test.in)
 			buf.WriteString(err.Error())
 
-		case fSSNewFormatter:
-			fmt.Fprintf(buf, test.format, ss.NewFormatter(test.in))
+		case fCSNewFormatter:
+			fmt.Fprintf(buf, test.format, scs.NewFormatter(test.in))
 
 		case fErrorf:
 			err := spew.Errorf(test.format, test.in)
@@ -194,7 +194,7 @@ func TestSpew(t *testing.T) {
 		}
 		s := buf.String()
 		if test.want != s {
-			t.Errorf("SpewState #%d\n got: %s want: %s", i, s, test.want)
+			t.Errorf("ConfigState #%d\n got: %s want: %s", i, s, test.want)
 			continue
 		}
 	}

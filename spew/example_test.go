@@ -131,20 +131,16 @@ func ExamplePrintf() {
 	// circular: {1 <*>{1 <*><shown>}}
 }
 
-// This example demonstrates how to use a SpewState.
-func ExampleSpewState() {
-	// A SpewState does not need initialization.
-	ss := new(spew.SpewState) // or var ss spew.SpewState
+// This example demonstrates how to use a ConfigState.
+func ExampleConfigState() {
+	// Modify the indent level of the ConfigState only.  The global
+	// configuration is not modified.
+	scs := spew.ConfigState{Indent: "\t"}
 
-	// Modify the indent level of the SpewState only.  The global configuration
-	// is not modified.
-	ssc := ss.Config()
-	ssc.Indent = "\t"
-
-	// Output using the SpewState instance.
+	// Output using the ConfigState instance.
 	v := map[string]int{"one": 1}
-	ss.Printf("v: %v\n", v)
-	ss.Dump(v)
+	scs.Printf("v: %v\n", v)
+	scs.Dump(v)
 
 	// Output:
 	// v: map[one:1]
@@ -153,27 +149,23 @@ func ExampleSpewState() {
 	// }
 }
 
-// This example demonstrates how to use a SpewState.Dump to dump variables to
+// This example demonstrates how to use ConfigState.Dump to dump variables to
 // stdout
-func ExampleSpewState_Dump() {
+func ExampleConfigState_Dump() {
 	// See the top-level Dump example for details on the types used in this
 	// example.
 
-	// A SpewState does not need initialization.
-	ss := new(spew.SpewState)  // or var ss spew.SpewState
-	ss2 := new(spew.SpewState) // or var ss2 spew.SpewState
-
-	// Modify the indent level of the first SpewState only.
-	ssc := ss.Config()
-	ssc.Indent = "\t"
+	// Create two ConfigState instances with different indentation.
+	scs := spew.ConfigState{Indent: "\t"}
+	scs2 := spew.ConfigState{Indent: " "}
 
 	// Setup some sample data structures for the example.
 	bar := Bar{Flag(flagTwo), uintptr(0)}
 	s1 := Foo{bar, map[interface{}]interface{}{"one": true}}
 
-	// Dump using the SpewState instances.
-	ss.Dump(s1)
-	ss2.Dump(s1)
+	// Dump using the ConfigState instances.
+	scs.Dump(s1)
+	scs2.Dump(s1)
 
 	// Output:
 	// (spew_test.Foo) {
@@ -197,26 +189,28 @@ func ExampleSpewState_Dump() {
 	//
 }
 
-// This example demonstrates how to use SpewState.Printf to display a variable
+// This example demonstrates how to use ConfigState.Printf to display a variable
 // with a format string and inline formatting.
-func ExampleSpewState_Printf() {
+func ExampleConfigState_Printf() {
 	// See the top-level Dump example for details on the types used in this
 	// example.
 
-	// A SpewState does not need initialization.
-	ss := new(spew.SpewState)  // or var ss spew.SpewState
-	ss2 := new(spew.SpewState) // or var ss2 spew.SpewState
+	// Create two ConfigState instances and modify the method handling of the
+	// first ConfigState only.
+	scs := spew.NewDefaultConfig()
+	scs2 := spew.NewDefaultConfig()
+	scs.DisableMethods = true
 
-	// Modify the method handling of the first SpewState only.
-	ssc := ss.Config()
-	ssc.DisableMethods = true
+	// Alternatively
+	// scs := spew.ConfigState{Indent: " ", DisableMethods: true}
+	// scs2 := spew.ConfigState{Indent: " "}
 
 	// This is of type Flag which implements a Stringer and has raw value 1.
 	f := flagTwo
 
-	// Dump using the SpewState instances.
-	ss.Printf("f: %v\n", f)
-	ss2.Printf("f: %v\n", f)
+	// Dump using the ConfigState instances.
+	scs.Printf("f: %v\n", f)
+	scs2.Printf("f: %v\n", f)
 
 	// Output:
 	// f: 1

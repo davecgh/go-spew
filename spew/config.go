@@ -16,12 +16,30 @@
 
 package spew
 
-// ConfigState is used to describe configuration options used by spew to format
-// and display values.  There is a  global instance, Config, that is used to
-// control all top-level Formatter and Dump functionality.  In addition, each
-// SpewState instance provides access to a unique ConfigState which can be used
-// to control the configuration of that particular instance.
+import (
+	"fmt"
+	"io"
+	"os"
+)
+
+// ConfigState houses the configuration options used by spew to format and
+// display values.  There is a global instance, Config, that is used to control
+// all top-level Formatter and Dump functionality.  Each ConfigState instance
+// provides methods equivalent to the top-level functions.
+//
+// The zero value for ConfigState provides no indentation.  You would typically
+// want to set it to a space or a tab.
+//
+// Alternatively, you can use NewDefaultConfig to get a ConfigState instance
+// with default settings.  See the documentation of NewDefaultConfig for default
+// values.
 type ConfigState struct {
+	// Indent specifies the string to use for each indentation level.  The
+	// global config instance that all top-level functions use set this to a
+	// single space by default.  If you would like more indentation, you might
+	// set this to a tab with "\t" or perhaps two spaces with "  ".
+	Indent string
+
 	// MaxDepth controls the maximum number of levels to descend into nested
 	// data structures.  The default, 0, means there is no limit.
 	//
@@ -29,11 +47,6 @@ type ConfigState struct {
 	// necessary to set this value unless you specifically want to limit deeply
 	// nested data structures.
 	MaxDepth int
-
-	// Indent specifies the string to use for each indentation level.  It is
-	// a single space by default.  If you would like more indentation, you might
-	// set this to a tab with "\t" or perhaps two spaces with "  ".
-	Indent string
 
 	// DisableMethods specifies whether or not error and Stringer interfaces are
 	// invoked for types that implement them.
@@ -55,4 +68,157 @@ type ConfigState struct {
 // The configuration can be changed by modifying the contents of spew.Config.
 var Config ConfigState = ConfigState{Indent: " "}
 
-var defaultConfig = ConfigState{Indent: " "}
+// Errorf is a wrapper for fmt.Errorf that treats each argument as if it were
+// passed with a Formatter interface returned by c.NewFormatter.  It returns
+// the formatted string as a value that satisfies error.  See NewFormatter
+// for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Errorf(format, c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Errorf(format string, a ...interface{}) (err error) {
+	return fmt.Errorf(format, c.convertArgs(a)...)
+}
+
+// Fprint is a wrapper for fmt.Fprint that treats each argument as if it were
+// passed with a Formatter interface returned by c.NewFormatter.  It returns
+// the number of bytes written and any write error encountered.  See
+// NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Fprint(w, c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Fprint(w io.Writer, a ...interface{}) (n int, err error) {
+	return fmt.Fprint(w, c.convertArgs(a)...)
+}
+
+// Fprintf is a wrapper for fmt.Fprintf that treats each argument as if it were
+// passed with a Formatter interface returned by c.NewFormatter.  It returns
+// the number of bytes written and any write error encountered.  See
+// NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Fprintf(w, format, c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
+	return fmt.Fprintf(w, format, c.convertArgs(a)...)
+}
+
+// Fprintln is a wrapper for fmt.Fprintln that treats each argument as if it
+// passed with a Formatter interface returned by c.NewFormatter.  See
+// NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Fprintln(w, c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Fprintln(w io.Writer, a ...interface{}) (n int, err error) {
+	return fmt.Fprintln(w, c.convertArgs(a)...)
+}
+
+// Print is a wrapper for fmt.Print that treats each argument as if it were
+// passed with a Formatter interface returned by c.NewFormatter.  It returns
+// the number of bytes written and any write error encountered.  See
+// NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Print(c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Print(a ...interface{}) (n int, err error) {
+	return fmt.Print(c.convertArgs(a)...)
+}
+
+// Printf is a wrapper for fmt.Printf that treats each argument as if it were
+// passed with a Formatter interface returned by c.NewFormatter.  It returns
+// the number of bytes written and any write error encountered.  See
+// NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Printf(format, c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Printf(format string, a ...interface{}) (n int, err error) {
+	return fmt.Printf(format, c.convertArgs(a)...)
+}
+
+// Println is a wrapper for fmt.Println that treats each argument as if it were
+// passed with a Formatter interface returned by c.NewFormatter.  It returns
+// the number of bytes written and any write error encountered.  See
+// NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Println(c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Println(a ...interface{}) (n int, err error) {
+	return fmt.Println(c.convertArgs(a)...)
+}
+
+/*
+NewFormatter returns a custom formatter that satisfies the fmt.Formatter
+interface.  As a result, it integrates cleanly with standard fmt package
+printing functions.  The formatter is useful for inline printing of smaller data
+types similar to the standard %v format specifier.
+
+The custom formatter only responds to the %v (most compact), %+v (adds pointer
+addresses), %#v (adds types), and %#+v (adds types and pointer addresses) verb
+combinations.  Any other verbs such as %x and %q will be sent to the the
+standard fmt package for formatting.  In addition, the custom formatter ignores
+the width and precision arguments (however they will still work on the format
+specifiers not handled by the custom formatter).
+
+Typically this function shouldn't be called directly.  It is much easier to make
+use of the custom formatter by calling one of the convenience functions such as
+c.Printf, c.Println, or c.Printf.
+*/
+func (c *ConfigState) NewFormatter(v interface{}) fmt.Formatter {
+	return newFormatter(c, v)
+}
+
+// Fdump formats and displays the passed arguments to io.Writer w.  It formats
+// exactly the same as Dump.
+func (c *ConfigState) Fdump(w io.Writer, a ...interface{}) {
+	fdump(c, w, a...)
+}
+
+/*
+Dump displays the passed parameters to standard out with newlines, customizable
+indentation, and additional debug information such as complete types and all
+pointer addresses used to indirect to the final value.  It provides the
+following features over the built-in printing facilities provided by the fmt
+package:
+
+	* Pointers are dereferenced and followed
+	* Circular data structures are detected and handled properly
+	* Custom Stringer/error interfaces are optionally invoked, including
+	  on unexported types
+	* Custom types which only implement the Stringer/error interfaces via
+	  a pointer receiver are optionally invoked when passing non-pointer
+	  variables
+
+The configuration options are controlled by modifying the public members
+of c.  See ConfigState for options documentation.
+
+See Fdump if you would prefer dumping to an arbitrary io.Writer.
+*/
+func (c *ConfigState) Dump(a ...interface{}) {
+	fdump(c, os.Stdout, a...)
+}
+
+// convertArgs accepts a slice of arguments and returns a slice of the same
+// length with each argument converted to a spew Formatter interface using
+// the ConfigState associated with s.
+func (c *ConfigState) convertArgs(args []interface{}) (formatters []interface{}) {
+	formatters = make([]interface{}, len(args))
+	for index, arg := range args {
+		formatters[index] = newFormatter(c, arg)
+	}
+	return formatters
+}
+
+// NewDefaultConfig returns a ConfigState with the following default settings.
+//
+//	Indent: " "
+// 	MaxDepth: 0
+// 	DisableMethods: false
+// 	DisablePointerMethods: false 
+func NewDefaultConfig() *ConfigState {
+	return &ConfigState{Indent: " "}
+}
