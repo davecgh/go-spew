@@ -88,19 +88,18 @@ Configuration of spew is handled by fields in the ConfigState type. For
 convenience, all of the top-level functions use a global state available via the
 spew.Config global.
 
-It is also possible to create a SpewState instance which provides a unique
-ConfigState accessible via the Config method. The methods of SpewState are
+It is also possible to create a ConfigState instance that provides methods
 equivalent to the top-level functions. This allows concurrent configuration
-options. See the SpewState documentation for more details.
+options. See the ConfigState documentation for more details.
 
 ```
-* MaxDepth
-	Maximum number of levels to descend into nested data structures.
-	There is no limit by default.
-
 * Indent
 	String to use for each indentation level for Dump functions.
 	It is a single space by default.  A popular alternative is "\t".
+
+* MaxDepth
+	Maximum number of levels to descend into nested data structures.
+	There is no limit by default.
 
 * DisableMethods
 	Disables invocation of error and Stringer interface methods.
