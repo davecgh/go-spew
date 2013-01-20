@@ -94,8 +94,8 @@ type indirCir3 struct {
 
 // dumpTest is used to describe a test to be perfomed against the Dump method.
 type dumpTest struct {
-	in   interface{}
-	want string
+	in    interface{}
+	wants []string
 }
 
 // dumpTests houses all of the tests to be performed against the Dump method.
@@ -103,8 +103,8 @@ var dumpTests = make([]dumpTest, 0)
 
 // addDumpTest is a helper method to append the passed input and desired result
 // to dumpTests
-func addDumpTest(in interface{}, want string) {
-	test := dumpTest{in, want}
+func addDumpTest(in interface{}, wants ...string) {
+	test := dumpTest{in, wants}
 	dumpTests = append(dumpTests, test)
 }
 
@@ -448,7 +448,7 @@ func addNilInterfaceDumpTests() {
 
 func addMapDumpTests() {
 	// Map with string keys and int vals.
-	v := map[string]int{"one": 1}
+	v := map[string]int{"one": 1, "two": 2}
 	nv := (*map[string]int)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
@@ -456,10 +456,15 @@ func addMapDumpTests() {
 	vt := "map[string]int"
 	vt1 := "string"
 	vt2 := "int"
-	vs := "{\n (" + vt1 + ") \"one\": (" + vt2 + ") 1\n}"
-	addDumpTest(v, "("+vt+") "+vs+"\n")
-	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
-	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	vs := "{\n (" + vt1 + ") \"one\": (" + vt2 + ") 1,\n (" + vt1 +
+		") \"two\": (" + vt2 + ") 2\n}"
+	vs2 := "{\n (" + vt1 + ") \"two\": (" + vt2 + ") 2,\n (" + vt1 +
+		") \"one\": (" + vt2 + ") 1\n}"
+	addDumpTest(v, "("+vt+") "+vs+"\n", "("+vt+") "+vs2+"\n")
+	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n",
+		"(*"+vt+")("+vAddr+")("+vs2+")\n")
+	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n",
+		"(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs2+")\n")
 	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 
 	// Map with custom formatter type on pointer receiver only keys and vals.
@@ -768,8 +773,8 @@ func TestDump(t *testing.T) {
 		buf := new(bytes.Buffer)
 		spew.Fdump(buf, test.in)
 		s := buf.String()
-		if test.want != s {
-			t.Errorf("Dump #%d\n got: %s want: %s", i, s, test.want)
+		if testFailed(s, test.wants) {
+			t.Errorf("Dump #%d\n got: %s %s", i, s, stringizeWants(test.wants))
 			continue
 		}
 	}

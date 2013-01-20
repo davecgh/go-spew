@@ -66,7 +66,7 @@ import (
 type formatterTest struct {
 	format string
 	in     interface{}
-	want   string
+	wants  []string
 }
 
 // formatterTests houses all of the tests to be performed against NewFormatter.
@@ -74,8 +74,8 @@ var formatterTests = make([]formatterTest, 0)
 
 // addFormatterTest is a helper method to append the passed input and desired
 // result to formatterTests.
-func addFormatterTest(format string, in interface{}, want string) {
-	test := formatterTest{format, in, want}
+func addFormatterTest(format string, in interface{}, wants ...string) {
+	test := formatterTest{format, in, wants}
 	formatterTests = append(formatterTests, test)
 }
 
@@ -702,28 +702,32 @@ func addNilInterfaceFormatterTests() {
 
 func addMapFormatterTests() {
 	// Map with string keys and int vals.
-	v := map[string]int{"one": 1}
+	v := map[string]int{"one": 1, "two": 2}
 	nv := (*map[string]int)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
 	vt := "map[string]int"
-	vs := "map[one:1]"
-	addFormatterTest("%v", v, vs)
-	addFormatterTest("%v", pv, "<*>"+vs)
-	addFormatterTest("%v", &pv, "<**>"+vs)
+	vs := "map[one:1 two:2]"
+	vs2 := "map[two:2 one:1]"
+	addFormatterTest("%v", v, vs, vs2)
+	addFormatterTest("%v", pv, "<*>"+vs, "<*>"+vs2)
+	addFormatterTest("%v", &pv, "<**>"+vs, "<**>"+vs2)
 	addFormatterTest("%+v", nv, "<nil>")
-	addFormatterTest("%+v", v, vs)
-	addFormatterTest("%+v", pv, "<*>("+vAddr+")"+vs)
-	addFormatterTest("%+v", &pv, "<**>("+pvAddr+"->"+vAddr+")"+vs)
+	addFormatterTest("%+v", v, vs, vs2)
+	addFormatterTest("%+v", pv, "<*>("+vAddr+")"+vs, "<*>("+vAddr+")"+vs2)
+	addFormatterTest("%+v", &pv, "<**>("+pvAddr+"->"+vAddr+")"+vs,
+		"<**>("+pvAddr+"->"+vAddr+")"+vs2)
 	addFormatterTest("%+v", nv, "<nil>")
-	addFormatterTest("%#v", v, "("+vt+")"+vs)
-	addFormatterTest("%#v", pv, "(*"+vt+")"+vs)
-	addFormatterTest("%#v", &pv, "(**"+vt+")"+vs)
+	addFormatterTest("%#v", v, "("+vt+")"+vs, "("+vt+")"+vs2)
+	addFormatterTest("%#v", pv, "(*"+vt+")"+vs, "(*"+vt+")"+vs2)
+	addFormatterTest("%#v", &pv, "(**"+vt+")"+vs, "(**"+vt+")"+vs2)
 	addFormatterTest("%#v", nv, "(*"+vt+")"+"<nil>")
-	addFormatterTest("%#+v", v, "("+vt+")"+vs)
-	addFormatterTest("%#+v", pv, "(*"+vt+")("+vAddr+")"+vs)
-	addFormatterTest("%#+v", &pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")"+vs)
+	addFormatterTest("%#+v", v, "("+vt+")"+vs, "("+vt+")"+vs2)
+	addFormatterTest("%#+v", pv, "(*"+vt+")("+vAddr+")"+vs,
+		"(*"+vt+")("+vAddr+")"+vs2)
+	addFormatterTest("%#+v", &pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")"+vs,
+		"(**"+vt+")("+pvAddr+"->"+vAddr+")"+vs2)
 	addFormatterTest("%#+v", nv, "(*"+vt+")"+"<nil>")
 
 	// Map with custom formatter type on pointer receiver only keys and vals.
@@ -1243,9 +1247,9 @@ func TestFormatter(t *testing.T) {
 		buf := new(bytes.Buffer)
 		spew.Fprintf(buf, test.format, test.in)
 		s := buf.String()
-		if test.want != s {
-			t.Errorf("Formatter #%d format: %s got: %s want: %s", i,
-				test.format, s, test.want)
+		if testFailed(s, test.wants) {
+			t.Errorf("Formatter #%d format: %s got: %s %s", i, test.format, s,
+				stringizeWants(test.wants))
 			continue
 		}
 	}
