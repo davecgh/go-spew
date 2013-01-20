@@ -50,6 +50,14 @@ func testFailed(result string, wants []string) bool {
 	return true
 }
 
+// panicer is used to intentionally cause a panic for testing spew properly
+// handles them
+type panicer int
+
+func (p panicer) String() string {
+	panic("test panic")
+}
+
 // spewFunc is used to identify which public function of the spew package or
 // ConfigState a test applies to.
 type spewFunc int

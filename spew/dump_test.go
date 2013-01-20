@@ -50,6 +50,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Struct that is circular through self referencing
 - Structs that are circular through cross referencing
 - Structs that are indirectly circular
+- Type that panics in its Stringer interface
 */
 
 package spew_test
@@ -748,6 +749,21 @@ func addCircularDumpTests() {
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s2+")\n")
 }
 
+func addPanicDumpTests() {
+	// Type that panics in its Stringer interface.
+	v := panicer(127)
+	nv := (*panicer)(nil)
+	pv := &v
+	vAddr := fmt.Sprintf("%p", pv)
+	pvAddr := fmt.Sprintf("%p", &pv)
+	vt := "spew_test.panicer"
+	vs := "(PANIC=test panic)127"
+	addDumpTest(v, "("+vt+") "+vs+"\n")
+	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
+	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
+}
+
 // TestDump executes all of the tests described by dumpTests.
 func TestDump(t *testing.T) {
 	// Setup tests.
@@ -767,6 +783,7 @@ func TestDump(t *testing.T) {
 	addChanDumpTests()
 	addFuncDumpTests()
 	addCircularDumpTests()
+	addPanicDumpTests()
 
 	t.Logf("Running %d tests", len(dumpTests))
 	for i, test := range dumpTests {
