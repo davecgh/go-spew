@@ -31,6 +31,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Slice containing interfaces
 - Standard string
 - Nil interface
+- Sub-interface
 - Map with string keys and int vals
 - Map with custom formatter type on pointer receiver only keys and vals
 - Map with interface keys and values
@@ -402,7 +403,7 @@ func addStringDumpTests() {
 	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 }
 
-func addNilInterfaceDumpTests() {
+func addInterfaceDumpTests() {
 	// Nil interface.
 	var v interface{}
 	nv := (*interface{})(nil)
@@ -415,6 +416,17 @@ func addNilInterfaceDumpTests() {
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
 	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
+
+	// Sub-interface.
+	v2 := interface{}(uint16(65535))
+	pv2 := &v2
+	v2Addr := fmt.Sprintf("%p", pv2)
+	pv2Addr := fmt.Sprintf("%p", &pv2)
+	v2t := "uint16"
+	v2s := "65535"
+	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
+	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
+	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
 }
 
 func addMapDumpTests() {
@@ -760,7 +772,7 @@ func TestDump(t *testing.T) {
 	addArrayDumpTests()
 	addSliceDumpTests()
 	addStringDumpTests()
-	addNilInterfaceDumpTests()
+	addInterfaceDumpTests()
 	addMapDumpTests()
 	addStructDumpTests()
 	addUintptrDumpTests()
