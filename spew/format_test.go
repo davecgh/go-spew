@@ -51,6 +51,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Structs that are circular through cross referencing
 - Structs that are indirectly circular
 - Type that panics in its Stringer interface
+- Type that has a custom Error interface
 */
 
 package spew_test
@@ -1250,6 +1251,33 @@ func addPanicFormatterTests() {
 	addFormatterTest("%#+v", nv, "(*"+vt+")"+"<nil>")
 }
 
+func addErrorFormatterTests() {
+	// Type that has a custom Error interface.
+	v := customError(127)
+	nv := (*customError)(nil)
+	pv := &v
+	vAddr := fmt.Sprintf("%p", pv)
+	pvAddr := fmt.Sprintf("%p", &pv)
+	vt := "spew_test.customError"
+	vs := "error: 127"
+	addFormatterTest("%v", v, vs)
+	addFormatterTest("%v", pv, "<*>"+vs)
+	addFormatterTest("%v", &pv, "<**>"+vs)
+	addFormatterTest("%v", nv, "<nil>")
+	addFormatterTest("%+v", v, vs)
+	addFormatterTest("%+v", pv, "<*>("+vAddr+")"+vs)
+	addFormatterTest("%+v", &pv, "<**>("+pvAddr+"->"+vAddr+")"+vs)
+	addFormatterTest("%+v", nv, "<nil>")
+	addFormatterTest("%#v", v, "("+vt+")"+vs)
+	addFormatterTest("%#v", pv, "(*"+vt+")"+vs)
+	addFormatterTest("%#v", &pv, "(**"+vt+")"+vs)
+	addFormatterTest("%#v", nv, "(*"+vt+")"+"<nil>")
+	addFormatterTest("%#+v", v, "("+vt+")"+vs)
+	addFormatterTest("%#+v", pv, "(*"+vt+")("+vAddr+")"+vs)
+	addFormatterTest("%#+v", &pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")"+vs)
+	addFormatterTest("%#+v", nv, "(*"+vt+")"+"<nil>")
+}
+
 // TestFormatter executes all of the tests described by formatterTests.
 func TestFormatter(t *testing.T) {
 	// Setup tests.
@@ -1270,6 +1298,7 @@ func TestFormatter(t *testing.T) {
 	addFuncFormatterTests()
 	addCircularFormatterTests()
 	addPanicFormatterTests()
+	addErrorFormatterTests()
 
 	t.Logf("Running %d tests", len(formatterTests))
 	for i, test := range formatterTests {

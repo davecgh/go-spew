@@ -734,6 +734,21 @@ func addPanicDumpTests() {
 	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
 }
 
+func addErrorDumpTests() {
+	// Type that has a custom Error interface.
+	v := customError(127)
+	nv := (*customError)(nil)
+	pv := &v
+	vAddr := fmt.Sprintf("%p", pv)
+	pvAddr := fmt.Sprintf("%p", &pv)
+	vt := "spew_test.customError"
+	vs := "error: 127"
+	addDumpTest(v, "("+vt+") "+vs+"\n")
+	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
+	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
+}
+
 // TestDump executes all of the tests described by dumpTests.
 func TestDump(t *testing.T) {
 	// Setup tests.
@@ -754,6 +769,7 @@ func TestDump(t *testing.T) {
 	addFuncDumpTests()
 	addCircularDumpTests()
 	addPanicDumpTests()
+	addErrorDumpTests()
 
 	t.Logf("Running %d tests", len(dumpTests))
 	for i, test := range dumpTests {

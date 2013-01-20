@@ -58,6 +58,13 @@ func (p panicer) String() string {
 	panic("test panic")
 }
 
+// customError is used to test custom error interface invocation.
+type customError int
+
+func (e customError) Error() string {
+	return fmt.Sprintf("error: %d", int(e))
+}
+
 // stringizeWants converts a slice of wanted test output into a format suitable
 // for an test error message.
 func stringizeWants(wants []string) string {
