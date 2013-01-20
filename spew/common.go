@@ -140,6 +140,9 @@ func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool)
 		}
 		viface = v.Addr().Interface()
 	} else {
+		if v.CanAddr() {
+			v = v.Addr()
+		}
 		viface = v.Interface()
 	}
 
