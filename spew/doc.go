@@ -70,13 +70,13 @@ equivalent to the top-level functions.  This allows concurrent configuration
 options.  See the ConfigState documentation for more details.
 
 The following configuration options are available:
-	* MaxDepth
-		Maximum number of levels to descend into nested data structures.
-		There is no limit by default.
-
 	* Indent
 		String to use for each indentation level for Dump functions.
 		It is a single space by default.  A popular alternative is "\t".
+
+	* MaxDepth
+		Maximum number of levels to descend into nested data structures.
+		There is no limit by default.
 
 	* DisableMethods
 		Disables invocation of error and Stringer interface methods.
