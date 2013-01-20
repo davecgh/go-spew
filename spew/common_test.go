@@ -20,6 +20,15 @@ import (
 	"fmt"
 )
 
+// custom type to test Stinger interface on non-pointer receiver.
+type stringer string
+
+// String implements the Stringer interface for testing invocation of custom
+// stringers on types with non-pointer receivers.
+func (s stringer) String() string {
+	return "stringer " + string(s)
+}
+
 // custom type to test Stinger interface on pointer receiver.
 type pstringer string
 

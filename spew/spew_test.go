@@ -25,7 +25,15 @@ import (
 	"testing"
 )
 
+// Config states with various settings.
 var scsDefault = spew.NewDefaultConfig()
+var scsNoMethods = &spew.ConfigState{Indent: " ", DisableMethods: true}
+var scsNoPmethods = &spew.ConfigState{Indent: " ", DisablePointerMethods: true}
+
+// Variables for tests on types which implement Stringer interface with and
+// without a pointer receiver.
+var ts = stringer("test")
+var tps = pstringer("test")
 
 // spewFunc is used to identify which public function of the spew package or
 // ConfigState a test applies to.
@@ -101,6 +109,14 @@ var spewTests = []spewTest{
 	{scsDefault, fFprintln, "", float64(6.28), "6.28\n"},
 	{scsDefault, fPrint, "", true, "true"},
 	{scsDefault, fPrintln, "", false, "false\n"},
+	{scsNoMethods, fCSFprint, "", ts, "test"},
+	{scsNoMethods, fCSFprint, "", &ts, "<*>test"},
+	{scsNoMethods, fCSFprint, "", tps, "test"},
+	{scsNoMethods, fCSFprint, "", &tps, "<*>test"},
+	{scsNoPmethods, fCSFprint, "", ts, "stringer test"},
+	{scsNoPmethods, fCSFprint, "", &ts, "<*>stringer test"},
+	{scsNoPmethods, fCSFprint, "", tps, "test"},
+	{scsNoPmethods, fCSFprint, "", &tps, "<*>stringer test"},
 }
 
 // redirStdout is a helper function to return the standard output from f as a
