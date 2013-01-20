@@ -52,6 +52,12 @@ base test element are also tested to ensure proper indirection across all types.
 - Structs that are indirectly circular
 - Type that panics in its Stringer interface
 - Type that has a custom Error interface
+- %x passthrough with uint
+- %#x passthrough with uint
+- %f passthrough with precision
+- %f passthrough with width and precision
+- %d passthrough with width
+- %q passthrough with string
 */
 
 package spew_test
@@ -1278,6 +1284,46 @@ func addErrorFormatterTests() {
 	addFormatterTest("%#+v", nv, "(*"+vt+")"+"<nil>")
 }
 
+func addPassthroughFormatterTests() {
+	// %x passthrough with uint.
+	v := uint(4294967295)
+	pv := &v
+	vAddr := fmt.Sprintf("%x", pv)
+	pvAddr := fmt.Sprintf("%x", &pv)
+	vs := "ffffffff"
+	addFormatterTest("%x", v, vs)
+	addFormatterTest("%x", pv, vAddr)
+	addFormatterTest("%x", &pv, pvAddr)
+
+	// %#x passthrough with uint.
+	v2 := int(2147483647)
+	pv2 := &v2
+	v2Addr := fmt.Sprintf("%#x", pv2)
+	pv2Addr := fmt.Sprintf("%#x", &pv2)
+	v2s := "0x7fffffff"
+	addFormatterTest("%#x", v2, v2s)
+	addFormatterTest("%#x", pv2, v2Addr)
+	addFormatterTest("%#x", &pv2, pv2Addr)
+
+	// %f passthrough with precision.
+	addFormatterTest("%.2f", 3.1415, "3.14")
+	addFormatterTest("%.3f", 3.1415, "3.142")
+	addFormatterTest("%.4f", 3.1415, "3.1415")
+
+	// %f passthrough with width and precision.
+	addFormatterTest("%5.2f", 3.1415, " 3.14")
+	addFormatterTest("%6.3f", 3.1415, " 3.142")
+	addFormatterTest("%7.4f", 3.1415, " 3.1415")
+
+	// %d passthrough with width.
+	addFormatterTest("%3d", 127, "127")
+	addFormatterTest("%4d", 127, " 127")
+	addFormatterTest("%5d", 127, "  127")
+
+	// %q passthrough with string.
+	addFormatterTest("%q", "test", "\"test\"")
+}
+
 // TestFormatter executes all of the tests described by formatterTests.
 func TestFormatter(t *testing.T) {
 	// Setup tests.
@@ -1299,6 +1345,7 @@ func TestFormatter(t *testing.T) {
 	addCircularFormatterTests()
 	addPanicFormatterTests()
 	addErrorFormatterTests()
+	addPassthroughFormatterTests()
 
 	t.Logf("Running %d tests", len(formatterTests))
 	for i, test := range formatterTests {
