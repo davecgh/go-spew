@@ -63,36 +63,6 @@ import (
 	"unsafe"
 )
 
-// custom type to test Stinger interface on pointer receiver.
-type pstringer string
-
-// String implements the Stringer interface for testing invocation of custom
-// stringers on types with only pointer receivers.
-func (s *pstringer) String() string {
-	return "stringer " + string(*s)
-}
-
-// xref1 and xref2 are cross referencing structs for testing circular reference
-//  detection.
-type xref1 struct {
-	ps2 *xref2
-}
-type xref2 struct {
-	ps1 *xref1
-}
-
-// indirCir1, indirCir2, and indirCir3 are used to generate an indirect circular
-// reference for testing detection.
-type indirCir1 struct {
-	ps2 *indirCir2
-}
-type indirCir2 struct {
-	ps3 *indirCir3
-}
-type indirCir3 struct {
-	ps1 *indirCir1
-}
-
 // dumpTest is used to describe a test to be perfomed against the Dump method.
 type dumpTest struct {
 	in    interface{}

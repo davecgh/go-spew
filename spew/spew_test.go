@@ -25,39 +25,6 @@ import (
 	"testing"
 )
 
-// stringizeWants converts a slice of wanted test output into a format suitable
-// for an test error message.
-func stringizeWants(wants []string) string {
-	s := ""
-	for i, want := range wants {
-		if i > 0 {
-			s += fmt.Sprintf("want%d: %s", i+1, want)
-		} else {
-			s += "want: " + want
-		}
-	}
-	return s
-}
-
-// testFailed returns whether or not a test failed by checking if the result
-// of the test is in the slice of wanted strings.
-func testFailed(result string, wants []string) bool {
-	for _, want := range wants {
-		if result == want {
-			return false
-		}
-	}
-	return true
-}
-
-// panicer is used to intentionally cause a panic for testing spew properly
-// handles them
-type panicer int
-
-func (p panicer) String() string {
-	panic("test panic")
-}
-
 // spewFunc is used to identify which public function of the spew package or
 // ConfigState a test applies to.
 type spewFunc int
