@@ -25,16 +25,6 @@ import (
 	"testing"
 )
 
-// Config states with various settings.
-var scsDefault = spew.NewDefaultConfig()
-var scsNoMethods = &spew.ConfigState{Indent: " ", DisableMethods: true}
-var scsNoPmethods = &spew.ConfigState{Indent: " ", DisablePointerMethods: true}
-
-// Variables for tests on types which implement Stringer interface with and
-// without a pointer receiver.
-var ts = stringer("test")
-var tps = pstringer("test")
-
 // spewFunc is used to identify which public function of the spew package or
 // ConfigState a test applies to.
 type spewFunc int
@@ -95,29 +85,7 @@ type spewTest struct {
 // These tests are only intended to ensure the public functions are exercised
 // and are intentionally not exhaustive of types.  The exhaustive type
 // tests are handled in the dump and format tests.
-var spewTests = []spewTest{
-	{scsDefault, fCSFdump, "", int8(127), "(int8) 127\n"},
-	{scsDefault, fCSFprint, "", int16(32767), "32767"},
-	{scsDefault, fCSFprintf, "%v", int32(2147483647), "2147483647"},
-	{scsDefault, fCSFprintln, "", int(2147483647), "2147483647\n"},
-	{scsDefault, fCSPrint, "", int64(9223372036854775807), "9223372036854775807"},
-	{scsDefault, fCSPrintln, "", uint8(255), "255\n"},
-	{scsDefault, fCSErrorf, "%#v", uint16(65535), "(uint16)65535"},
-	{scsDefault, fCSNewFormatter, "%v", uint32(4294967295), "4294967295"},
-	{scsDefault, fErrorf, "%v", uint64(18446744073709551615), "18446744073709551615"},
-	{scsDefault, fFprint, "", float32(3.14), "3.14"},
-	{scsDefault, fFprintln, "", float64(6.28), "6.28\n"},
-	{scsDefault, fPrint, "", true, "true"},
-	{scsDefault, fPrintln, "", false, "false\n"},
-	{scsNoMethods, fCSFprint, "", ts, "test"},
-	{scsNoMethods, fCSFprint, "", &ts, "<*>test"},
-	{scsNoMethods, fCSFprint, "", tps, "test"},
-	{scsNoMethods, fCSFprint, "", &tps, "<*>test"},
-	{scsNoPmethods, fCSFprint, "", ts, "stringer test"},
-	{scsNoPmethods, fCSFprint, "", &ts, "<*>stringer test"},
-	{scsNoPmethods, fCSFprint, "", tps, "test"},
-	{scsNoPmethods, fCSFprint, "", &tps, "<*>stringer test"},
-}
+var spewTests []spewTest
 
 // redirStdout is a helper function to return the standard output from f as a
 // byte slice.
@@ -138,8 +106,48 @@ func redirStdout(f func()) ([]byte, error) {
 	return ioutil.ReadFile(fileName)
 }
 
+func initSpewTests() {
+	// Config states with various settings.
+	scsDefault := spew.NewDefaultConfig()
+	scsNoMethods := &spew.ConfigState{Indent: " ", DisableMethods: true}
+	scsNoPmethods := &spew.ConfigState{Indent: " ", DisablePointerMethods: true}
+	scsMaxDepth := &spew.ConfigState{Indent: " ", MaxDepth: 1}
+
+	// Variables for tests on types which implement Stringer interface with and
+	// without a pointer receiver.
+	ts := stringer("test")
+	tps := pstringer("test")
+
+	spewTests = []spewTest{
+		{scsDefault, fCSFdump, "", int8(127), "(int8) 127\n"},
+		{scsDefault, fCSFprint, "", int16(32767), "32767"},
+		{scsDefault, fCSFprintf, "%v", int32(2147483647), "2147483647"},
+		{scsDefault, fCSFprintln, "", int(2147483647), "2147483647\n"},
+		{scsDefault, fCSPrint, "", int64(9223372036854775807), "9223372036854775807"},
+		{scsDefault, fCSPrintln, "", uint8(255), "255\n"},
+		{scsDefault, fCSErrorf, "%#v", uint16(65535), "(uint16)65535"},
+		{scsDefault, fCSNewFormatter, "%v", uint32(4294967295), "4294967295"},
+		{scsDefault, fErrorf, "%v", uint64(18446744073709551615), "18446744073709551615"},
+		{scsDefault, fFprint, "", float32(3.14), "3.14"},
+		{scsDefault, fFprintln, "", float64(6.28), "6.28\n"},
+		{scsDefault, fPrint, "", true, "true"},
+		{scsDefault, fPrintln, "", false, "false\n"},
+		{scsNoMethods, fCSFprint, "", ts, "test"},
+		{scsNoMethods, fCSFprint, "", &ts, "<*>test"},
+		{scsNoMethods, fCSFprint, "", tps, "test"},
+		{scsNoMethods, fCSFprint, "", &tps, "<*>test"},
+		{scsNoPmethods, fCSFprint, "", ts, "stringer test"},
+		{scsNoPmethods, fCSFprint, "", &ts, "<*>stringer test"},
+		{scsNoPmethods, fCSFprint, "", tps, "test"},
+		{scsNoPmethods, fCSFprint, "", &tps, "<*>stringer test"},
+		{scsMaxDepth, fCSFprint, "", &tps, "<*>stringer test"},
+	}
+}
+
 // TestSpew executes all of the tests described by spewTests.
 func TestSpew(t *testing.T) {
+	initSpewTests()
+
 	t.Logf("Running %d tests", len(spewTests))
 	for i, test := range spewTests {
 		buf := new(bytes.Buffer)
