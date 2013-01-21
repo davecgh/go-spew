@@ -2,10 +2,10 @@ go-spew
 =======
 
 Go-spew implements a deep pretty printer for Go data structures to aid in
-debugging.  It is still under initial development, so some of the formatting
-output is likely to change, however it is already quite capable.   It is
-licensed under the liberal ISC license, so it may be used in open source or
-commercial projects.
+debugging.  A comprehensive suite of tests with 100% test coverage is provided
+to ensure proper functionality.  See `test_coverage.txt` for the gocov coverage
+report.  Go-spew is licensed under the liberal ISC license, so it may be used in
+open source or commercial projects.
 
 If you're interested in reading about how this package came to life and some
 of the challenges involved in provide a deep pretty printer, there is a blog
