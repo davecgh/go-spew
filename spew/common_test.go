@@ -59,6 +59,17 @@ type indirCir3 struct {
 	ps1 *indirCir1
 }
 
+// embed is used to test embedded structures.
+type embed struct {
+	a string
+}
+
+// embedwrap is used to test embedded structures.
+type embedwrap struct {
+	*embed
+	e *embed
+}
+
 // panicer is used to intentionally cause a panic for testing spew properly
 // handles them
 type panicer int

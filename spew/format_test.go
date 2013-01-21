@@ -39,6 +39,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Struct that contains another struct
 - Struct that contains custom type with Stringer pointer interface via both
   exported and unexported fields
+- Struct that contains embedded struct and field to same struct
 - Uintptr to 0 (null pointer)
 - Uintptr address of real variable
 - Unsafe.Pointer to 0 (null pointer)
@@ -915,6 +916,41 @@ func addStructFormatterTests() {
 	addFormatterTest("%#+v", pv3, "(*"+v3t+")("+v3Addr+")"+v3s3)
 	addFormatterTest("%#+v", &pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")"+v3s3)
 	addFormatterTest("%#+v", nv3, "(*"+v3t+")"+"<nil>")
+
+	// Struct that contains embedded struct and field to same struct.
+	e := embed{"embedstr"}
+	v4 := embedwrap{embed: &e, e: &e}
+	nv4 := (*embedwrap)(nil)
+	pv4 := &v4
+	eAddr := fmt.Sprintf("%p", &e)
+	v4Addr := fmt.Sprintf("%p", pv4)
+	pv4Addr := fmt.Sprintf("%p", &pv4)
+	v4t := "spew_test.embedwrap"
+	v4t2 := "spew_test.embed"
+	v4t3 := "string"
+	v4s := "{<*>{embedstr} <*>{embedstr}}"
+	v4s2 := "{embed:<*>(" + eAddr + "){a:embedstr} e:<*>(" + eAddr +
+		"){a:embedstr}}"
+	v4s3 := "{embed:(*" + v4t2 + "){a:(" + v4t3 + ")embedstr} e:(*" + v4t2 +
+		"){a:(" + v4t3 + ")embedstr}}"
+	v4s4 := "{embed:(*" + v4t2 + ")(" + eAddr + "){a:(" + v4t3 +
+		")embedstr} e:(*" + v4t2 + ")(" + eAddr + "){a:(" + v4t3 + ")embedstr}}"
+	addFormatterTest("%v", v4, v4s)
+	addFormatterTest("%v", pv4, "<*>"+v4s)
+	addFormatterTest("%v", &pv4, "<**>"+v4s)
+	addFormatterTest("%+v", nv4, "<nil>")
+	addFormatterTest("%+v", v4, v4s2)
+	addFormatterTest("%+v", pv4, "<*>("+v4Addr+")"+v4s2)
+	addFormatterTest("%+v", &pv4, "<**>("+pv4Addr+"->"+v4Addr+")"+v4s2)
+	addFormatterTest("%+v", nv4, "<nil>")
+	addFormatterTest("%#v", v4, "("+v4t+")"+v4s3)
+	addFormatterTest("%#v", pv4, "(*"+v4t+")"+v4s3)
+	addFormatterTest("%#v", &pv4, "(**"+v4t+")"+v4s3)
+	addFormatterTest("%#v", nv4, "(*"+v4t+")"+"<nil>")
+	addFormatterTest("%#+v", v4, "("+v4t+")"+v4s4)
+	addFormatterTest("%#+v", pv4, "(*"+v4t+")("+v4Addr+")"+v4s4)
+	addFormatterTest("%#+v", &pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")"+v4s4)
+	addFormatterTest("%#+v", nv4, "(*"+v4t+")"+"<nil>")
 }
 
 func addUintptrFormatterTests() {

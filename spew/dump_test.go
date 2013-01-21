@@ -39,6 +39,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Struct that contains another struct
 - Struct that contains custom type with Stringer pointer interface via both
   exported and unexported fields
+- Struct that contains embedded struct and field to same struct
 - Uintptr to 0 (null pointer)
 - Uintptr address of real variable
 - Unsafe.Pointer to 0 (null pointer)
@@ -542,6 +543,25 @@ func addStructDumpTests() {
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
 	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
+
+	// Struct that contains embedded struct and field to same struct.
+	e := embed{"embedstr"}
+	v4 := embedwrap{embed: &e, e: &e}
+	nv4 := (*embedwrap)(nil)
+	pv4 := &v4
+	eAddr := fmt.Sprintf("%p", &e)
+	v4Addr := fmt.Sprintf("%p", pv4)
+	pv4Addr := fmt.Sprintf("%p", &pv4)
+	v4t := "spew_test.embedwrap"
+	v4t2 := "spew_test.embed"
+	v4t3 := "string"
+	v4s := "{\n embed: (*" + v4t2 + ")(" + eAddr + ")({\n  a: (" + v4t3 +
+		") \"embedstr\"\n }),\n e: (*" + v4t2 + ")(" + eAddr + ")({\n" +
+		"  a: (" + v4t3 + ") \"embedstr\"\n })\n}"
+	addDumpTest(v4, "("+v4t+") "+v4s+"\n")
+	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
+	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
+	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
 }
 
 func addUintptrDumpTests() {
