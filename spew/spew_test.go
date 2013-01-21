@@ -118,6 +118,17 @@ func initSpewTests() {
 	ts := stringer("test")
 	tps := pstringer("test")
 
+	// depthTester is used to test max depth handling for structs, array, slices
+	// and maps.
+	type depthTester struct {
+		ic    indirCir1
+		arr   [1]string
+		slice []string
+		m     map[string]int
+	}
+	dt := depthTester{indirCir1{nil}, [1]string{"arr"}, []string{"slice"},
+		map[string]int{"one": 1}}
+
 	spewTests = []spewTest{
 		{scsDefault, fCSFdump, "", int8(127), "(int8) 127\n"},
 		{scsDefault, fCSFprint, "", int16(32767), "32767"},
@@ -140,7 +151,7 @@ func initSpewTests() {
 		{scsNoPmethods, fCSFprint, "", &ts, "<*>stringer test"},
 		{scsNoPmethods, fCSFprint, "", tps, "test"},
 		{scsNoPmethods, fCSFprint, "", &tps, "<*>stringer test"},
-		{scsMaxDepth, fCSFprint, "", &tps, "<*>stringer test"},
+		{scsMaxDepth, fCSFprint, "", dt, "{{<max>} [<max>] [<max>] map[<max>]}"},
 	}
 }
 
