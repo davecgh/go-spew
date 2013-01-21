@@ -197,8 +197,14 @@ func (f *formatState) formatPtr(v reflect.Value) {
 // dealing with and formats it appropriately.  It is a recursive function,
 // however circular data structures are detected and handled properly.
 func (f *formatState) format(v reflect.Value) {
-	// Handle pointers specially.
+	// Handle invalid reflect values immediately.
 	kind := v.Kind()
+	if kind == reflect.Invalid {
+		f.fs.Write(invalidAngleBytes)
+		return
+	}
+
+	// Handle pointers specially.
 	if kind == reflect.Ptr {
 		f.formatPtr(v)
 		return
@@ -224,7 +230,8 @@ func (f *formatState) format(v reflect.Value) {
 
 	switch kind {
 	case reflect.Invalid:
-		f.fs.Write(invalidAngleBytes)
+		// Do nothing.  We should never get here since invalid has already
+		// been handled above.
 
 	case reflect.Bool:
 		printBool(f.fs, v.Bool())

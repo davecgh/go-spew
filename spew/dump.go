@@ -139,8 +139,14 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 // appropriately.  It is a recursive function, however circular data structures
 // are detected and handled properly.
 func (d *dumpState) dump(v reflect.Value) {
-	// Handle pointers specially.
+	// Handle invalid reflect values immediately.
 	kind := v.Kind()
+	if kind == reflect.Invalid {
+		d.w.Write(invalidAngleBytes)
+		return
+	}
+
+	// Handle pointers specially.
 	if kind == reflect.Ptr {
 		d.pad()
 		d.dumpPtr(v)
@@ -169,7 +175,8 @@ func (d *dumpState) dump(v reflect.Value) {
 
 	switch kind {
 	case reflect.Invalid:
-		d.w.Write(invalidAngleBytes)
+		// Do nothing.  We should never get here since invalid has already
+		// been handled above.
 
 	case reflect.Bool:
 		printBool(d.w, v.Bool())
