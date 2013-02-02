@@ -35,10 +35,10 @@ There are two different approaches spew allows for dumping Go data structures:
 	  and additional debug information such as types and all pointer addresses
 	  used to indirect to the final value
 	* A custom Formatter interface that integrates cleanly with the standard fmt
-	  package and replaces %v and %+v to provide inline printing similar
-	  to the default %v while providing the additional functionality outlined
-	  above and passing unsupported format verb/flag combinations such a %x,
-	  %q, and %#v along to fmt
+	  package and replaces %v, %+v, %#v, and %#+v to provide inline printing
+	  similar to the default %v while providing the additional functionality
+	  outlined above and passing unsupported format verbs such as %x and %q
+	  along to fmt
 
 Quick Start
 
