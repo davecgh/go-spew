@@ -14,7 +14,7 @@ github.com/davecgh/go-spew/spew/format.go	 formatState.buildDefaultFormat	 100.0
 github.com/davecgh/go-spew/spew/format.go	 formatState.unpackValue	 100.00% (4/4)
 github.com/davecgh/go-spew/spew/common.go	 catchPanic			 100.00% (4/4)
 github.com/davecgh/go-spew/spew/spew.go		 convertArgs			 100.00% (4/4)
-github.com/davecgh/go-spew/spew/dump.go		 dumpState.pad			 100.00% (4/4)
+github.com/davecgh/go-spew/spew/dump.go		 dumpState.indent		 100.00% (4/4)
 github.com/davecgh/go-spew/spew/config.go	 ConfigState.convertArgs	 100.00% (4/4)
 github.com/davecgh/go-spew/spew/dump.go		 dumpState.unpackValue		 100.00% (3/3)
 github.com/davecgh/go-spew/spew/common.go	 printBool			 100.00% (3/3)
