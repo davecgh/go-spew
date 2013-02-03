@@ -27,19 +27,19 @@ import (
 
 // dumpState contains information about the state of a dump operation.
 type dumpState struct {
-	w              io.Writer
-	depth          int
-	pointers       map[uintptr]int
-	ignoreNextType bool
-	ignoreNextPad  bool
-	cs             *ConfigState
+	w                io.Writer
+	depth            int
+	pointers         map[uintptr]int
+	ignoreNextType   bool
+	ignoreNextIndent bool
+	cs               *ConfigState
 }
 
-// pad performs indentation according to the depth level and cs.Indent
+// indent performs indentation according to the depth level and cs.Indent
 // option.
-func (d *dumpState) pad() {
-	if d.ignoreNextPad {
-		d.ignoreNextPad = false
+func (d *dumpState) indent() {
+	if d.ignoreNextIndent {
+		d.ignoreNextIndent = false
 		return
 	}
 	d.w.Write(bytes.Repeat([]byte(d.cs.Indent), d.depth))
@@ -148,14 +148,14 @@ func (d *dumpState) dump(v reflect.Value) {
 
 	// Handle pointers specially.
 	if kind == reflect.Ptr {
-		d.pad()
+		d.indent()
 		d.dumpPtr(v)
 		return
 	}
 
 	// Print type information unless already handled elsewhere.
 	if !d.ignoreNextType {
-		d.pad()
+		d.indent()
 		d.w.Write(openParenBytes)
 		d.w.Write([]byte(v.Type().String()))
 		d.w.Write(closeParenBytes)
@@ -203,7 +203,7 @@ func (d *dumpState) dump(v reflect.Value) {
 		d.w.Write(openBraceNewlineBytes)
 		d.depth++
 		if (d.cs.MaxDepth != 0) && (d.depth > d.cs.MaxDepth) {
-			d.pad()
+			d.indent()
 			d.w.Write(maxNewlineBytes)
 		} else {
 			numEntries := v.Len()
@@ -217,7 +217,7 @@ func (d *dumpState) dump(v reflect.Value) {
 			}
 		}
 		d.depth--
-		d.pad()
+		d.indent()
 		d.w.Write(closeBraceBytes)
 
 	case reflect.String:
@@ -234,7 +234,7 @@ func (d *dumpState) dump(v reflect.Value) {
 		d.w.Write(openBraceNewlineBytes)
 		d.depth++
 		if (d.cs.MaxDepth != 0) && (d.depth > d.cs.MaxDepth) {
-			d.pad()
+			d.indent()
 			d.w.Write(maxNewlineBytes)
 		} else {
 			numEntries := v.Len()
@@ -242,7 +242,7 @@ func (d *dumpState) dump(v reflect.Value) {
 			for i, key := range keys {
 				d.dump(d.unpackValue(key))
 				d.w.Write(colonSpaceBytes)
-				d.ignoreNextPad = true
+				d.ignoreNextIndent = true
 				d.dump(d.unpackValue(v.MapIndex(key)))
 				if i < (numEntries - 1) {
 					d.w.Write(commaNewlineBytes)
@@ -252,24 +252,24 @@ func (d *dumpState) dump(v reflect.Value) {
 			}
 		}
 		d.depth--
-		d.pad()
+		d.indent()
 		d.w.Write(closeBraceBytes)
 
 	case reflect.Struct:
 		d.w.Write(openBraceNewlineBytes)
 		d.depth++
 		if (d.cs.MaxDepth != 0) && (d.depth > d.cs.MaxDepth) {
-			d.pad()
+			d.indent()
 			d.w.Write(maxNewlineBytes)
 		} else {
 			vt := v.Type()
 			numFields := v.NumField()
 			for i := 0; i < numFields; i++ {
-				d.pad()
+				d.indent()
 				vtf := vt.Field(i)
 				d.w.Write([]byte(vtf.Name))
 				d.w.Write(colonSpaceBytes)
-				d.ignoreNextPad = true
+				d.ignoreNextIndent = true
 				d.dump(d.unpackValue(v.Field(i)))
 				if i < (numFields - 1) {
 					d.w.Write(commaNewlineBytes)
@@ -279,7 +279,7 @@ func (d *dumpState) dump(v reflect.Value) {
 			}
 		}
 		d.depth--
-		d.pad()
+		d.indent()
 		d.w.Write(closeBraceBytes)
 
 	case reflect.Uintptr:

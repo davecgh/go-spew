@@ -39,7 +39,7 @@ func (s *pstringer) String() string {
 }
 
 // xref1 and xref2 are cross referencing structs for testing circular reference
-//  detection.
+// detection.
 type xref1 struct {
 	ps2 *xref2
 }
