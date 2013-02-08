@@ -86,7 +86,7 @@ func (e customError) Error() string {
 }
 
 // stringizeWants converts a slice of wanted test output into a format suitable
-// for an test error message.
+// for a test error message.
 func stringizeWants(wants []string) string {
 	s := ""
 	for i, want := range wants {
