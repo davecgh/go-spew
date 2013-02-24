@@ -151,6 +151,39 @@ func (c *ConfigState) Println(a ...interface{}) (n int, err error) {
 	return fmt.Println(c.convertArgs(a)...)
 }
 
+// Sprint is a wrapper for fmt.Sprint that treats each argument as if it were
+// passed with a Formatter interface returned by c.NewFormatter.  It returns
+// the resulting string.  See NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Sprint(c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Sprint(a ...interface{}) string {
+	return fmt.Sprint(c.convertArgs(a)...)
+}
+
+// Sprintf is a wrapper for fmt.Sprintf that treats each argument as if it were
+// passed with a Formatter interface returned by c.NewFormatter.  It returns
+// the resulting string.  See NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Sprintf(format, c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Sprintf(format string, a ...interface{}) string {
+	return fmt.Sprintf(format, c.convertArgs(a)...)
+}
+
+// Sprintln is a wrapper for fmt.Sprintln that treats each argument as if it
+// were passed with a Formatter interface returned by c.NewFormatter.  It
+// returns the resulting string.  See NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Sprintln(c.NewFormatter(a), c.NewFormatter(b))
+func (c *ConfigState) Sprintln(a ...interface{}) string {
+	return fmt.Sprintln(c.convertArgs(a)...)
+}
+
 /*
 NewFormatter returns a custom formatter that satisfies the fmt.Formatter
 interface.  As a result, it integrates cleanly with standard fmt package

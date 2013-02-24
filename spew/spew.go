@@ -104,6 +104,41 @@ func Println(a ...interface{}) (n int, err error) {
 	return fmt.Println(convertArgs(a)...)
 }
 
+// Sprintf formats according to a format specifier and returns the resulting string.
+//
+// Sprint is a wrapper for fmt.Sprint that treats each argument as if it were
+// passed with a default Formatter interface returned by NewFormatter.  It
+// returns the resulting string.  See NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Sprint(spew.NewFormatter(a), spew.NewFormatter(b))
+func Sprint(a ...interface{}) string {
+	return fmt.Sprint(convertArgs(a)...)
+}
+
+// Sprintf is a wrapper for fmt.Sprintf that treats each argument as if it were
+// passed with a default Formatter interface returned by NewFormatter.  It
+// returns the resulting string.  See NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Sprintf(format, spew.NewFormatter(a), spew.NewFormatter(b))
+func Sprintf(format string, a ...interface{}) string {
+	return fmt.Sprintf(format, convertArgs(a)...)
+}
+
+// Sprintln is a wrapper for fmt.Sprintln that treats each argument as if it
+// were passed with a default Formatter interface returned by NewFormatter.  It
+// returns the resulting string.  See NewFormatter for formatting details.
+//
+// This function is shorthand for the following syntax:
+//
+//	fmt.Sprintln(spew.NewFormatter(a), spew.NewFormatter(b))
+func Sprintln(a ...interface{}) string {
+	return fmt.Sprintln(convertArgs(a)...)
+}
+
 // convertArgs accepts a slice of arguments and returns a slice of the same
 // length with each argument converted to a default spew Formatter interface.
 func convertArgs(args []interface{}) (formatters []interface{}) {
