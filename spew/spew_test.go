@@ -36,6 +36,9 @@ const (
 	fCSFprintln
 	fCSPrint
 	fCSPrintln
+	fCSSprint
+	fCSSprintf
+	fCSSprintln
 	fCSErrorf
 	fCSNewFormatter
 	fErrorf
@@ -43,6 +46,9 @@ const (
 	fFprintln
 	fPrint
 	fPrintln
+	fSprint
+	fSprintf
+	fSprintln
 )
 
 // Map of spewFunc values to names for pretty printing.
@@ -53,6 +59,9 @@ var spewFuncStrings = map[spewFunc]string{
 	fCSFprintln:     "ConfigState.Fprintln",
 	fCSPrint:        "ConfigState.Print",
 	fCSPrintln:      "ConfigState.Println",
+	fCSSprint:       "ConfigState.Sprint",
+	fCSSprintf:      "ConfigState.Sprintf",
+	fCSSprintln:     "ConfigState.Sprintln",
 	fCSErrorf:       "ConfigState.Errorf",
 	fCSNewFormatter: "ConfigState.NewFormatter",
 	fErrorf:         "spew.Errorf",
@@ -60,6 +69,9 @@ var spewFuncStrings = map[spewFunc]string{
 	fFprintln:       "spew.Fprintln",
 	fPrint:          "spew.Print",
 	fPrintln:        "spew.Println",
+	fSprint:         "spew.Sprint",
+	fSprintf:        "spew.Sprintf",
+	fSprintln:       "spew.Sprintln",
 }
 
 func (f spewFunc) String() string {
@@ -136,6 +148,9 @@ func initSpewTests() {
 		{scsDefault, fCSFprintln, "", int(2147483647), "2147483647\n"},
 		{scsDefault, fCSPrint, "", int64(9223372036854775807), "9223372036854775807"},
 		{scsDefault, fCSPrintln, "", uint8(255), "255\n"},
+		{scsDefault, fCSSprint, "", complex(1, 2), "(1+2i)"},
+		{scsDefault, fCSSprintf, "%v", complex(float32(3), 4), "(3+4i)"},
+		{scsDefault, fCSSprintln, "", complex(float64(5), 6), "(5+6i)\n"},
 		{scsDefault, fCSErrorf, "%#v", uint16(65535), "(uint16)65535"},
 		{scsDefault, fCSNewFormatter, "%v", uint32(4294967295), "4294967295"},
 		{scsDefault, fErrorf, "%v", uint64(18446744073709551615), "18446744073709551615"},
@@ -143,6 +158,9 @@ func initSpewTests() {
 		{scsDefault, fFprintln, "", float64(6.28), "6.28\n"},
 		{scsDefault, fPrint, "", true, "true"},
 		{scsDefault, fPrintln, "", false, "false\n"},
+		{scsDefault, fSprint, "", complex(-1, -2), "(-1-2i)"},
+		{scsDefault, fSprintf, "%v", complex(float32(-3), -4), "(-3-4i)"},
+		{scsDefault, fSprintln, "", complex(float64(-5), -6), "(-5-6i)\n"},
 		{scsNoMethods, fCSFprint, "", ts, "test"},
 		{scsNoMethods, fCSFprint, "", &ts, "<*>test"},
 		{scsNoMethods, fCSFprint, "", tps, "test"},
@@ -196,6 +214,18 @@ func TestSpew(t *testing.T) {
 			}
 			buf.Write(b)
 
+		case fCSSprint:
+			str := test.cs.Sprint(test.in)
+			buf.WriteString(str)
+
+		case fCSSprintf:
+			str := test.cs.Sprintf(test.format, test.in)
+			buf.WriteString(str)
+
+		case fCSSprintln:
+			str := test.cs.Sprintln(test.in)
+			buf.WriteString(str)
+
 		case fCSErrorf:
 			err := test.cs.Errorf(test.format, test.in)
 			buf.WriteString(err.Error())
@@ -228,6 +258,18 @@ func TestSpew(t *testing.T) {
 				continue
 			}
 			buf.Write(b)
+
+		case fSprint:
+			str := spew.Sprint(test.in)
+			buf.WriteString(str)
+
+		case fSprintf:
+			str := spew.Sprintf(test.format, test.in)
+			buf.WriteString(str)
+
+		case fSprintln:
+			str := spew.Sprintln(test.in)
+			buf.WriteString(str)
 
 		default:
 			t.Errorf("%v #%d unrecognized function", test.f, i)
