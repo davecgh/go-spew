@@ -62,6 +62,13 @@ type ConfigState struct {
 	// interface with a pointer receiver should not be mutating their state
 	// inside these interface methods.
 	DisablePointerMethods bool
+
+	//ContinueOnMethod specifies whether recursion should stop once
+	//a Stringer or an error interface is encountered.
+	//
+	//It defaults to false, meaning that it does not pretty-print
+	//the internals of Stringers or errors.
+	ContinueOnMethod bool
 }
 
 // Config is the active configuration of the top-level functions.
@@ -149,39 +156,6 @@ func (c *ConfigState) Printf(format string, a ...interface{}) (n int, err error)
 //	fmt.Println(c.NewFormatter(a), c.NewFormatter(b))
 func (c *ConfigState) Println(a ...interface{}) (n int, err error) {
 	return fmt.Println(c.convertArgs(a)...)
-}
-
-// Sprint is a wrapper for fmt.Sprint that treats each argument as if it were
-// passed with a Formatter interface returned by c.NewFormatter.  It returns
-// the resulting string.  See NewFormatter for formatting details.
-//
-// This function is shorthand for the following syntax:
-//
-//	fmt.Sprint(c.NewFormatter(a), c.NewFormatter(b))
-func (c *ConfigState) Sprint(a ...interface{}) string {
-	return fmt.Sprint(c.convertArgs(a)...)
-}
-
-// Sprintf is a wrapper for fmt.Sprintf that treats each argument as if it were
-// passed with a Formatter interface returned by c.NewFormatter.  It returns
-// the resulting string.  See NewFormatter for formatting details.
-//
-// This function is shorthand for the following syntax:
-//
-//	fmt.Sprintf(format, c.NewFormatter(a), c.NewFormatter(b))
-func (c *ConfigState) Sprintf(format string, a ...interface{}) string {
-	return fmt.Sprintf(format, c.convertArgs(a)...)
-}
-
-// Sprintln is a wrapper for fmt.Sprintln that treats each argument as if it
-// were passed with a Formatter interface returned by c.NewFormatter.  It
-// returns the resulting string.  See NewFormatter for formatting details.
-//
-// This function is shorthand for the following syntax:
-//
-//	fmt.Sprintln(c.NewFormatter(a), c.NewFormatter(b))
-func (c *ConfigState) Sprintln(a ...interface{}) string {
-	return fmt.Sprintln(c.convertArgs(a)...)
 }
 
 /*
