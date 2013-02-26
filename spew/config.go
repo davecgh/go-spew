@@ -62,6 +62,13 @@ type ConfigState struct {
 	// interface with a pointer receiver should not be mutating their state
 	// inside these interface methods.
 	DisablePointerMethods bool
+
+	//ContinueOnMethod specifies whether recursion should stop once
+	//a Stringer or an error interface is encountered.
+	//
+	//It defaults to false, meaning that it does not pretty-print
+	//the internals of Stringers or errors.
+	ContinueOnMethod bool
 }
 
 // Config is the active configuration of the top-level functions.
