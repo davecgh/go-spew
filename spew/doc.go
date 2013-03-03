@@ -87,6 +87,10 @@ The following configuration options are available:
 		which only accept pointer receivers from non-pointer variables.
 		Pointer method invocation is enabled by default.
 
+	* ContinueOnMethod
+		Enables recursion into types after invoking error and Stringer interface
+		methods. Recursion after method invocation is disabled by default.
+
 Dump Usage
 
 Simply call spew.Dump with a list of variables you want to dump:

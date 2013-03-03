@@ -151,10 +151,10 @@ func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool)
 	case error:
 		defer catchPanic(w, v)
 		if cs.ContinueOnMethod {
-			w.Write(append(openParenBytes, []byte(iface.Error())...))
+			w.Write(openParenBytes)
+			w.Write([]byte(iface.Error()))
 			w.Write(closeParenBytes)
 			w.Write(spaceBytes)
-
 			return false
 		}
 
@@ -164,10 +164,10 @@ func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool)
 	case fmt.Stringer:
 		defer catchPanic(w, v)
 		if cs.ContinueOnMethod {
-			w.Write(append(openParenBytes, []byte(iface.String())...))
+			w.Write(openParenBytes)
+			w.Write([]byte(iface.String()))
 			w.Write(closeParenBytes)
 			w.Write(spaceBytes)
-
 			return false
 		}
 		w.Write([]byte(iface.String()))

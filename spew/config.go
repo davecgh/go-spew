@@ -63,11 +63,14 @@ type ConfigState struct {
 	// inside these interface methods.
 	DisablePointerMethods bool
 
-	//ContinueOnMethod specifies whether recursion should stop once
-	//a Stringer or an error interface is encountered.
+	// ContinueOnMethod specifies whether or not recursion should continue once
+	// a custom error or Stringer interface is invoked.  The default, false,
+	// means it will print the results of invoking the custom error or Stringer
+	// interface and return immediately instead of continuing to recurse into
+	// the internals of the data type.
 	//
-	//It defaults to false, meaning that it does not pretty-print
-	//the internals of Stringers or errors.
+	// NOTE: This flag does not have any effect if method invocation is disabled
+	// via the DisableMethods or DisablePointerMethods options.
 	ContinueOnMethod bool
 }
 
@@ -255,10 +258,11 @@ func (c *ConfigState) convertArgs(args []interface{}) (formatters []interface{})
 
 // NewDefaultConfig returns a ConfigState with the following default settings.
 //
-//	Indent: " "
+// 	Indent: " "
 // 	MaxDepth: 0
 // 	DisableMethods: false
-// 	DisablePointerMethods: false 
+// 	DisablePointerMethods: false
+// 	ContinueOnMethod: false
 func NewDefaultConfig() *ConfigState {
 	return &ConfigState{Indent: " "}
 }
