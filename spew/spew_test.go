@@ -124,6 +124,7 @@ func initSpewTests() {
 	scsNoMethods := &spew.ConfigState{Indent: " ", DisableMethods: true}
 	scsNoPmethods := &spew.ConfigState{Indent: " ", DisablePointerMethods: true}
 	scsMaxDepth := &spew.ConfigState{Indent: " ", MaxDepth: 1}
+	scsContinue := &spew.ConfigState{Indent: " ", ContinueOnMethod: true}
 
 	// Variables for tests on types which implement Stringer interface with and
 	// without a pointer receiver.
@@ -140,6 +141,9 @@ func initSpewTests() {
 	}
 	dt := depthTester{indirCir1{nil}, [1]string{"arr"}, []string{"slice"},
 		map[string]int{"one": 1}}
+
+	// Variable for tests on types which implement error interface.
+	te := customError(10)
 
 	spewTests = []spewTest{
 		{scsDefault, fCSFdump, "", int8(127), "(int8) 127\n"},
@@ -175,6 +179,12 @@ func initSpewTests() {
 			" arr: ([1]string) {\n  <max depth reached>\n },\n" +
 			" slice: ([]string) {\n  <max depth reached>\n },\n" +
 			" m: (map[string]int) {\n  <max depth reached>\n }\n}\n"},
+		{scsContinue, fCSFprint, "", ts, "(stringer test) test"},
+		{scsContinue, fCSFdump, "", ts, "(spew_test.stringer) " +
+			"(stringer test) \"test\"\n"},
+		{scsContinue, fCSFprint, "", te, "(error: 10) 10"},
+		{scsContinue, fCSFdump, "", te, "(spew_test.customError) " +
+			"(error: 10) 10\n"},
 	}
 }
 
