@@ -237,10 +237,10 @@ func (f *formatState) format(v reflect.Value) {
 		printBool(f.fs, v.Bool())
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		printInt(f.fs, v.Int())
+		printInt(f.fs, v.Int(), 10)
 
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		printUint(f.fs, v.Uint())
+		printUint(f.fs, v.Uint(), 10)
 
 	case reflect.Float32:
 		printFloat(f.fs, v.Float(), 32)

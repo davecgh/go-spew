@@ -186,13 +186,13 @@ func printBool(w io.Writer, val bool) {
 }
 
 // printInt outputs a signed integer value to Writer w.
-func printInt(w io.Writer, val int64) {
-	w.Write([]byte(strconv.FormatInt(val, 10)))
+func printInt(w io.Writer, val int64, base int) {
+	w.Write([]byte(strconv.FormatInt(val, base)))
 }
 
 // printUint outputs an unsigned integer value to Writer w.
-func printUint(w io.Writer, val uint64) {
-	w.Write([]byte(strconv.FormatUint(val, 10)))
+func printUint(w io.Writer, val uint64, base int) {
+	w.Write([]byte(strconv.FormatUint(val, base)))
 }
 
 // printFloat outputs a floating point value using the specified precision,
