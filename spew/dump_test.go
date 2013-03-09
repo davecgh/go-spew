@@ -26,9 +26,11 @@ base test element are also tested to ensure proper indirection across all types.
 - Array containing standard ints
 - Array containing type with custom formatter on pointer receiver only
 - Array containing interfaces
+- Array containing bytes
 - Slice containing standard float32 values
 - Slice containing type with custom formatter on pointer receiver only
 - Slice containing interfaces
+- Slice containing bytes
 - Standard string
 - Nil interface
 - Sub-interface
@@ -341,6 +343,30 @@ func addArrayDumpTests() {
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
 	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
+
+	// Array containing bytes.
+	v4 := [34]byte{
+		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+		0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20,
+		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+		0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30,
+		0x31, 0x32,
+	}
+	nv4 := (*[34]byte)(nil)
+	pv4 := &v4
+	v4Addr := fmt.Sprintf("%p", pv4)
+	pv4Addr := fmt.Sprintf("%p", &pv4)
+	v4t := "[34]uint8"
+	v4s := "{\n 00000000  11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f 20" +
+		"  |............... |\n" +
+		" 00000010  21 22 23 24 25 26 27 28  29 2a 2b 2c 2d 2e 2f 30" +
+		"  |!\"#$%&'()*+,-./0|\n" +
+		" 00000020  31 32                                           " +
+		"  |12|\n}"
+	addDumpTest(v4, "("+v4t+") "+v4s+"\n")
+	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
+	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
+	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
 }
 
 func addSliceDumpTests() {
@@ -387,6 +413,30 @@ func addSliceDumpTests() {
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
 	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
+
+	// Slice containing bytes.
+	v4 := []byte{
+		0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+		0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20,
+		0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+		0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30,
+		0x31, 0x32,
+	}
+	nv4 := (*[]byte)(nil)
+	pv4 := &v4
+	v4Addr := fmt.Sprintf("%p", pv4)
+	pv4Addr := fmt.Sprintf("%p", &pv4)
+	v4t := "[]uint8"
+	v4s := "{\n 00000000  11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f 20" +
+		"  |............... |\n" +
+		" 00000010  21 22 23 24 25 26 27 28  29 2a 2b 2c 2d 2e 2f 30" +
+		"  |!\"#$%&'()*+,-./0|\n" +
+		" 00000020  31 32                                           " +
+		"  |12|\n}"
+	addDumpTest(v4, "("+v4t+") "+v4s+"\n")
+	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
+	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
+	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
 }
 
 func addStringDumpTests() {
