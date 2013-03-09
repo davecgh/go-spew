@@ -28,6 +28,9 @@ printing facilities for Go data types are as follows:
 	* Custom types which only implement the Stringer/error interfaces via
 	  a pointer receiver are optionally invoked when passing non-pointer
 	  variables
+	* Byte arrays and slices are dumped like the hexdump -C command which
+	  includes offsets, byte values in hex, and ASCII output (only when using
+	  Dump style)
 
 There are two different approaches spew allows for dumping Go data structures:
 
@@ -115,6 +118,14 @@ shown here.
 	 ExportedField: (map[interface {}]interface {}) {
 	  (string) "one": (bool) true
 	 }
+	}
+
+Byte (and uint8) arrays and slices are displayed uniquely like the hexdump -C
+command as shown.
+	([]uint8) {
+	 00000000  11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f 20  |............... |
+	 00000010  21 22 23 24 25 26 27 28  29 2a 2b 2c 2d 2e 2f 30  |!"#$%&'()*+,-./0|
+	 00000020  31 32                                             |12|
 	}
 
 Custom Formatter

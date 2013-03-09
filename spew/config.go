@@ -235,6 +235,8 @@ package:
 	* Custom types which only implement the Stringer/error interfaces via
 	  a pointer receiver are optionally invoked when passing non-pointer
 	  variables
+	* Byte arrays and slices are dumped like the hexdump -C command which
+	  includes offsets, byte values in hex, and ASCII output
 
 The configuration options are controlled by modifying the public members
 of c.  See ConfigState for options documentation.
