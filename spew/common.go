@@ -120,7 +120,7 @@ func catchPanic(w io.Writer, v reflect.Value) {
 func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool) {
 	// We need an interface to check if the type implements the error or
 	// Stringer interface.  However, the reflect package won't give us an
-	// an interface on certain things like unexported struct fields in order
+	// interface on certain things like unexported struct fields in order
 	// to enforce visibility rules.  We use unsafe to bypass these restrictions
 	// since this package does not mutate the values.
 	if !v.CanInterface() {
