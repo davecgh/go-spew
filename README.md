@@ -31,11 +31,12 @@ $ go get github.com/davecgh/go-spew/spew
 ## Quick Start
 
 To dump a variable with full newlines, indentation, type, and pointer
-information use Dump or Fdump:
+information use Dump, Fdump, or Sdump:
 
 ```Go
 spew.Dump(myVar1, myVar2, ...)
 spew.Fdump(someWriter, myVar1, myVar2, ...)
+str := spew.Sdump(myVar1, myVar2, ...)
 ```
 
 Alternatively, if you would prefer to use format strings with a compacted inline
