@@ -17,6 +17,7 @@
 package spew
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -245,6 +246,14 @@ See Fdump if you would prefer dumping to an arbitrary io.Writer.
 */
 func (c *ConfigState) Dump(a ...interface{}) {
 	fdump(c, os.Stdout, a...)
+}
+
+// Sdump returns a string with the passed arguments formatted exactly the same
+// as Dump.
+func (c *ConfigState) Sdump(a ...interface{}) string {
+	var buf bytes.Buffer
+	fdump(c, &buf, a...)
+	return buf.String()
 }
 
 // convertArgs accepts a slice of arguments and returns a slice of the same

@@ -363,6 +363,14 @@ func Fdump(w io.Writer, a ...interface{}) {
 	fdump(&Config, w, a...)
 }
 
+// Sdump returns a string with the passed arguments formatted exactly the same
+// as Dump.
+func Sdump(a ...interface{}) string {
+	var buf bytes.Buffer
+	fdump(&Config, &buf, a...)
+	return buf.String()
+}
+
 /*
 Dump displays the passed parameters to standard out with newlines, customizable
 indentation, and additional debug information such as complete types and all
