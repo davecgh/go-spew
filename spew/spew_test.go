@@ -36,6 +36,7 @@ const (
 	fCSFprintln
 	fCSPrint
 	fCSPrintln
+	fCSSdump
 	fCSSprint
 	fCSSprintf
 	fCSSprintln
@@ -46,6 +47,7 @@ const (
 	fFprintln
 	fPrint
 	fPrintln
+	fSdump
 	fSprint
 	fSprintf
 	fSprintln
@@ -57,6 +59,7 @@ var spewFuncStrings = map[spewFunc]string{
 	fCSFprint:       "ConfigState.Fprint",
 	fCSFprintf:      "ConfigState.Fprintf",
 	fCSFprintln:     "ConfigState.Fprintln",
+	fCSSdump:        "ConfigState.Sdump",
 	fCSPrint:        "ConfigState.Print",
 	fCSPrintln:      "ConfigState.Println",
 	fCSSprint:       "ConfigState.Sprint",
@@ -69,6 +72,7 @@ var spewFuncStrings = map[spewFunc]string{
 	fFprintln:       "spew.Fprintln",
 	fPrint:          "spew.Print",
 	fPrintln:        "spew.Println",
+	fSdump:          "spew.Sdump",
 	fSprint:         "spew.Sprint",
 	fSprintf:        "spew.Sprintf",
 	fSprintln:       "spew.Sprintln",
@@ -152,6 +156,7 @@ func initSpewTests() {
 		{scsDefault, fCSFprintln, "", int(2147483647), "2147483647\n"},
 		{scsDefault, fCSPrint, "", int64(9223372036854775807), "9223372036854775807"},
 		{scsDefault, fCSPrintln, "", uint8(255), "255\n"},
+		{scsDefault, fCSSdump, "", uint8(64), "(uint8) 64\n"},
 		{scsDefault, fCSSprint, "", complex(1, 2), "(1+2i)"},
 		{scsDefault, fCSSprintf, "%v", complex(float32(3), 4), "(3+4i)"},
 		{scsDefault, fCSSprintln, "", complex(float64(5), 6), "(5+6i)\n"},
@@ -162,6 +167,7 @@ func initSpewTests() {
 		{scsDefault, fFprintln, "", float64(6.28), "6.28\n"},
 		{scsDefault, fPrint, "", true, "true"},
 		{scsDefault, fPrintln, "", false, "false\n"},
+		{scsDefault, fSdump, "", complex(-10, -20), "(complex128) (-10-20i)\n"},
 		{scsDefault, fSprint, "", complex(-1, -2), "(-1-2i)"},
 		{scsDefault, fSprintf, "%v", complex(float32(-3), -4), "(-3-4i)"},
 		{scsDefault, fSprintln, "", complex(float64(-5), -6), "(-5-6i)\n"},
@@ -224,6 +230,10 @@ func TestSpew(t *testing.T) {
 			}
 			buf.Write(b)
 
+		case fCSSdump:
+			str := test.cs.Sdump(test.in)
+			buf.WriteString(str)
+
 		case fCSSprint:
 			str := test.cs.Sprint(test.in)
 			buf.WriteString(str)
@@ -268,6 +278,10 @@ func TestSpew(t *testing.T) {
 				continue
 			}
 			buf.Write(b)
+
+		case fSdump:
+			str := spew.Sdump(test.in)
+			buf.WriteString(str)
 
 		case fSprint:
 			str := spew.Sprint(test.in)
