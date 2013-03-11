@@ -242,7 +242,8 @@ package:
 The configuration options are controlled by modifying the public members
 of c.  See ConfigState for options documentation.
 
-See Fdump if you would prefer dumping to an arbitrary io.Writer.
+See Fdump if you would prefer dumping to an arbitrary io.Writer or Sdump to
+get the formatted result as a string.
 */
 func (c *ConfigState) Dump(a ...interface{}) {
 	fdump(c, os.Stdout, a...)

@@ -49,9 +49,10 @@ This section demonstrates how to quickly get started with spew.  See the
 sections below for further details on formatting and configuration options.
 
 To dump a variable with full newlines, indentation, type, and pointer
-information use Dump or Fdump:
+information use Dump, Fdump, or Sdump:
 	spew.Dump(myVar1, myVar2, ...)
 	spew.Fdump(someWriter, myVar1, myVar2, ...)
+	str := spew.Sdump(myVar1, myVar2, ...)
 
 Alternatively, if you would prefer to use format strings with a compacted inline
 printing style, use the convenience wrappers Printf, Fprintf, etc with
@@ -104,6 +105,10 @@ You may also call spew.Fdump if you would prefer to output to an arbitrary
 io.Writer.  For example, to dump to standard error:
 
 	spew.Fdump(os.Stderr, myVar1, myVar2, ...)
+
+A third option is to call spew.Sdump to get the formatted output as a string:
+
+	str := spew.Sdump(myVar1, myVar2, ...)
 
 Sample Dump Output
 

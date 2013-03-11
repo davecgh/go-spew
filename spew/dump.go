@@ -391,7 +391,8 @@ package:
 The configuration options are controlled by an exported package global,
 spew.Config.  See ConfigState for options documentation.
 
-See Fdump if you would prefer dumping to an arbitrary io.Writer.
+See Fdump if you would prefer dumping to an arbitrary io.Writer or Sdump to
+get the formatted result as a string.
 */
 func Dump(a ...interface{}) {
 	fdump(&Config, os.Stdout, a...)
