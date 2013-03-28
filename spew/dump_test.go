@@ -37,6 +37,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Map with string keys and int vals
 - Map with custom formatter type on pointer receiver only keys and vals
 - Map with interface keys and values
+- Map with nil interface value
 - Struct with primitives
 - Struct that contains another struct
 - Struct that contains custom type with Stringer pointer interface via both
@@ -398,7 +399,7 @@ func addSliceDumpTests() {
 	addDumpTest(nv2, "(*[]"+v2t+")(<nil>)\n")
 
 	// Slice containing interfaces.
-	v3 := []interface{}{"one", int(2), uint(3)}
+	v3 := []interface{}{"one", int(2), uint(3), nil}
 	nv3 := (*[]interface{})(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
@@ -407,8 +408,9 @@ func addSliceDumpTests() {
 	v3t2 := "string"
 	v3t3 := "int"
 	v3t4 := "uint"
+	v3t5 := "interface {}"
 	v3s := "{\n (" + v3t2 + ") \"one\",\n (" + v3t3 + ") 2,\n (" + v3t4 +
-		") 3\n}"
+		") 3,\n (" + v3t5 + ") <nil>\n}"
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
@@ -530,6 +532,22 @@ func addMapDumpTests() {
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
 	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
+
+	// Map with nil interface value.
+	v4 := map[string]interface{}{"nil": nil}
+	nv4 := (*map[string]interface{})(nil)
+	pv4 := &v4
+	v4Addr := fmt.Sprintf("%p", pv4)
+	pv4Addr := fmt.Sprintf("%p", &pv4)
+	v4t := "map[string]interface {}"
+	v4t1 := "string"
+	v4t2 := "interface {}"
+	v4s := "{\n (" + v4t1 + ") \"nil\": (" + v4t2 + ") <nil>\n}"
+	addDumpTest(v4, "("+v4t+") "+v4s+"\n")
+	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
+	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
+	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
+
 }
 
 func addStructDumpTests() {

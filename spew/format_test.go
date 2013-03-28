@@ -35,6 +35,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Map with string keys and int vals
 - Map with custom formatter type on pointer receiver only keys and vals
 - Map with interface keys and values
+- Map with nil interface value
 - Struct with primitives
 - Struct that contains another struct
 - Struct that contains custom type with Stringer pointer interface via both
@@ -627,7 +628,7 @@ func addSliceFormatterTests() {
 	addFormatterTest("%#+v", nv2, "(*"+v2t+")"+"<nil>")
 
 	// Slice containing interfaces.
-	v3 := []interface{}{"one", int(2), uint(3)}
+	v3 := []interface{}{"one", int(2), uint(3), nil}
 	nv3 := (*[]interface{})(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
@@ -636,8 +637,10 @@ func addSliceFormatterTests() {
 	v3t2 := "string"
 	v3t3 := "int"
 	v3t4 := "uint"
-	v3s := "[one 2 3]"
-	v3s2 := "[(" + v3t2 + ")one (" + v3t3 + ")2 (" + v3t4 + ")3]"
+	v3t5 := "interface {}"
+	v3s := "[one 2 3 <nil>]"
+	v3s2 := "[(" + v3t2 + ")one (" + v3t3 + ")2 (" + v3t4 + ")3 (" + v3t5 +
+		")<nil>]"
 	addFormatterTest("%v", v3, v3s)
 	addFormatterTest("%v", pv3, "<*>"+v3s)
 	addFormatterTest("%v", &pv3, "<**>"+v3s)
@@ -812,6 +815,33 @@ func addMapFormatterTests() {
 	addFormatterTest("%#+v", pv3, "(*"+v3t+")("+v3Addr+")"+v3s2)
 	addFormatterTest("%#+v", &pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")"+v3s2)
 	addFormatterTest("%#+v", nv3, "(*"+v3t+")"+"<nil>")
+
+	// Map with nil interface value
+	v4 := map[string]interface{}{"nil": nil}
+	nv4 := (*map[string]interface{})(nil)
+	pv4 := &v4
+	v4Addr := fmt.Sprintf("%p", pv4)
+	pv4Addr := fmt.Sprintf("%p", &pv4)
+	v4t := "map[string]interface {}"
+	v4t1 := "interface {}"
+	v4s := "map[nil:<nil>]"
+	v4s2 := "map[nil:(" + v4t1 + ")<nil>]"
+	addFormatterTest("%v", v4, v4s)
+	addFormatterTest("%v", pv4, "<*>"+v4s)
+	addFormatterTest("%v", &pv4, "<**>"+v4s)
+	addFormatterTest("%+v", nv4, "<nil>")
+	addFormatterTest("%+v", v4, v4s)
+	addFormatterTest("%+v", pv4, "<*>("+v4Addr+")"+v4s)
+	addFormatterTest("%+v", &pv4, "<**>("+pv4Addr+"->"+v4Addr+")"+v4s)
+	addFormatterTest("%+v", nv4, "<nil>")
+	addFormatterTest("%#v", v4, "("+v4t+")"+v4s2)
+	addFormatterTest("%#v", pv4, "(*"+v4t+")"+v4s2)
+	addFormatterTest("%#v", &pv4, "(**"+v4t+")"+v4s2)
+	addFormatterTest("%#v", nv4, "(*"+v4t+")"+"<nil>")
+	addFormatterTest("%#+v", v4, "("+v4t+")"+v4s2)
+	addFormatterTest("%#+v", pv4, "(*"+v4t+")("+v4Addr+")"+v4s2)
+	addFormatterTest("%#+v", &pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")"+v4s2)
+	addFormatterTest("%#+v", nv4, "(*"+v4t+")"+"<nil>")
 }
 
 func addStructFormatterTests() {
