@@ -92,9 +92,11 @@ func (f *formatState) constructOrigFormat(verb rune) (format string) {
 // This is useful for data types like structs, arrays, slices, and maps which
 // can contain varying types packed inside an interface.
 func (f *formatState) unpackValue(v reflect.Value) reflect.Value {
-	if v.Kind() == reflect.Interface && !v.IsNil() {
+	if v.Kind() == reflect.Interface {
 		f.ignoreNextType = false
-		v = v.Elem()
+		if !v.IsNil() {
+			v = v.Elem()
+		}
 	}
 	return v
 }
@@ -276,7 +278,11 @@ func (f *formatState) format(v reflect.Value) {
 		f.fs.Write([]byte(v.String()))
 
 	case reflect.Interface:
-		// Do nothing.  We should never get here due to unpackValue calls
+		// The only time we should get here is for nil interfaces due to
+		// unpackValue calls.
+		if v.IsNil() {
+			f.fs.Write(nilAngleBytes)
+		}
 
 	case reflect.Ptr:
 		// Do nothing.  We should never get here since pointers have already

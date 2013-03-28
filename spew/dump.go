@@ -262,7 +262,11 @@ func (d *dumpState) dump(v reflect.Value) {
 		d.w.Write([]byte(strconv.Quote(v.String())))
 
 	case reflect.Interface:
-		// Do nothing.  We should never get here due to unpackValue calls.
+		// The only time we should get here is for nil interfaces due to
+		// unpackValue calls.
+		if v.IsNil() {
+			d.w.Write(nilAngleBytes)
+		}
 
 	case reflect.Ptr:
 		// Do nothing.  We should never get here since pointers have already
