@@ -31,6 +31,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Slice containing type with custom formatter on pointer receiver only
 - Slice containing interfaces
 - Slice containing bytes
+- Nil slice
 - Standard string
 - Nil interface
 - Sub-interface
@@ -439,6 +440,19 @@ func addSliceDumpTests() {
 	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
 	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
 	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
+
+	// Nil slice.
+	v5 := []int(nil)
+	nv5 := (*[]int)(nil)
+	pv5 := &v5
+	v5Addr := fmt.Sprintf("%p", pv5)
+	pv5Addr := fmt.Sprintf("%p", &pv5)
+	v5t := "[]int"
+	v5s := "<nil>"
+	addDumpTest(v5, "("+v5t+") "+v5s+"\n")
+	addDumpTest(pv5, "(*"+v5t+")("+v5Addr+")("+v5s+")\n")
+	addDumpTest(&pv5, "(**"+v5t+")("+pv5Addr+"->"+v5Addr+")("+v5s+")\n")
+	addDumpTest(nv5, "(*"+v5t+")(<nil>)\n")
 }
 
 func addStringDumpTests() {

@@ -29,6 +29,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Slice containing standard float32 values
 - Slice containing type with custom formatter on pointer receiver only
 - Slice containing interfaces
+- Nil slice
 - Standard string
 - Nil interface
 - Sub-interface
@@ -657,6 +658,31 @@ func addSliceFormatterTests() {
 	addFormatterTest("%#+v", pv3, "(*"+v3t+")("+v3Addr+")"+v3s2)
 	addFormatterTest("%#+v", &pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")"+v3s2)
 	addFormatterTest("%#+v", nv3, "(*"+v3t+")"+"<nil>")
+
+	// Nil slice.
+	var v4 []int
+	nv4 := (*[]int)(nil)
+	pv4 := &v4
+	v4Addr := fmt.Sprintf("%p", pv4)
+	pv4Addr := fmt.Sprintf("%p", &pv4)
+	v4t := "[]int"
+	v4s := "<nil>"
+	addFormatterTest("%v", v4, v4s)
+	addFormatterTest("%v", pv4, "<*>"+v4s)
+	addFormatterTest("%v", &pv4, "<**>"+v4s)
+	addFormatterTest("%+v", nv4, "<nil>")
+	addFormatterTest("%+v", v4, v4s)
+	addFormatterTest("%+v", pv4, "<*>("+v4Addr+")"+v4s)
+	addFormatterTest("%+v", &pv4, "<**>("+pv4Addr+"->"+v4Addr+")"+v4s)
+	addFormatterTest("%+v", nv4, "<nil>")
+	addFormatterTest("%#v", v4, "("+v4t+")"+v4s)
+	addFormatterTest("%#v", pv4, "(*"+v4t+")"+v4s)
+	addFormatterTest("%#v", &pv4, "(**"+v4t+")"+v4s)
+	addFormatterTest("%#v", nv4, "(*"+v4t+")"+"<nil>")
+	addFormatterTest("%#+v", v4, "("+v4t+")"+v4s)
+	addFormatterTest("%#+v", pv4, "(*"+v4t+")("+v4Addr+")"+v4s)
+	addFormatterTest("%#+v", &pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")"+v4s)
+	addFormatterTest("%#+v", nv4, "(*"+v4t+")"+"<nil>")
 }
 
 func addStringFormatterTests() {
