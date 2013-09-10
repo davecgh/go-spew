@@ -1,6 +1,6 @@
 
-github.com/davecgh/go-spew/spew/dump.go		 dumpState.dump			 100.00% (82/82)
-github.com/davecgh/go-spew/spew/format.go	 formatState.format		 100.00% (76/76)
+github.com/davecgh/go-spew/spew/dump.go		 dumpState.dump			 100.00% (86/86)
+github.com/davecgh/go-spew/spew/format.go	 formatState.format		 100.00% (80/80)
 github.com/davecgh/go-spew/spew/format.go	 formatState.formatPtr		 100.00% (52/52)
 github.com/davecgh/go-spew/spew/dump.go		 dumpState.dumpPtr		 100.00% (44/44)
 github.com/davecgh/go-spew/spew/common.go	 handleMethods			 100.00% (30/30)
@@ -52,4 +52,5 @@ github.com/davecgh/go-spew/spew/spew.go		 Sprint				 100.00% (1/1)
 github.com/davecgh/go-spew/spew/spew.go		 Sprintf			 100.00% (1/1)
 github.com/davecgh/go-spew/spew/config.go	 ConfigState.Dump		 100.00% (1/1)
 github.com/davecgh/go-spew/spew/spew.go		 Sprintln			 100.00% (1/1)
+github.com/davecgh/go-spew/spew			 ------------------------------- 100.00% (457/457)
 
