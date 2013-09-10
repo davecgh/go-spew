@@ -256,7 +256,14 @@ func (f *formatState) format(v reflect.Value) {
 	case reflect.Complex128:
 		printComplex(f.fs, v.Complex(), 64)
 
-	case reflect.Array, reflect.Slice:
+	case reflect.Slice:
+		if v.IsNil() {
+			f.fs.Write(nilAngleBytes)
+			break
+		}
+		fallthrough
+
+	case reflect.Array:
 		f.fs.Write(openBracketBytes)
 		f.depth++
 		if (f.cs.MaxDepth != 0) && (f.depth > f.cs.MaxDepth) {

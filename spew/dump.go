@@ -245,7 +245,14 @@ func (d *dumpState) dump(v reflect.Value) {
 	case reflect.Complex128:
 		printComplex(d.w, v.Complex(), 64)
 
-	case reflect.Array, reflect.Slice:
+	case reflect.Slice:
+		if v.IsNil() {
+			d.w.Write(nilAngleBytes)
+			break
+		}
+		fallthrough
+
+	case reflect.Array:
 		d.w.Write(openBraceNewlineBytes)
 		d.depth++
 		if (d.cs.MaxDepth != 0) && (d.depth > d.cs.MaxDepth) {
