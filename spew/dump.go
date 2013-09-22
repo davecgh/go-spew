@@ -23,8 +23,28 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
+)
+
+var (
+	// uint8Type is a reflect.Type representing a uint8.  It is used to
+	// convert cgo types to uint8 slices for hexdumping.
+	uint8Type = reflect.TypeOf(uint8(0))
+
+	// cCharRE is a regular expression that matches a cgo char.
+	// It is used to detect character arrays to hexdump them.
+	cCharRE = regexp.MustCompile("^.*\\._Ctype_char$")
+
+	// cUnsignedCharRE is a regular expression that matches a cgo unsigned
+	// char.  It is used to detect unsigned character arrays to hexdump
+	// them.
+	cUnsignedCharRE = regexp.MustCompile("^.*\\._Ctype_unsignedchar$")
+
+	// cUint8tCharRE is a regular expression that matches a cgo uint8_t.
+	// It is used to detect uint8_t arrays to hexdump them.
+	cUint8tCharRE = regexp.MustCompile("^.*\\._Ctype_uint8_t$")
 )
 
 // dumpState contains information about the state of a dump operation.
@@ -139,34 +159,75 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 // dumpSlice handles formatting of arrays and slices.  Byte (uint8 under
 // reflection) arrays and slices are dumped in hexdump -C fashion.
 func (d *dumpState) dumpSlice(v reflect.Value) {
-	// Handle byte (uint8 under reflection) arrays and slices uniquely.
+	// Determine whether this type should be hex dumped or not.  Also,
+	// for types which should be hexdumped, try to use the underlying data
+	// first, then fall back to trying to convert them to a uint8 slice.
+	var buf []uint8
+	doConvert := false
+	doHexDump := false
 	numEntries := v.Len()
-	if (numEntries > 0) && (v.Index(0).Kind() == reflect.Uint8) {
-		// We need an addressable interface to convert the type back into a byte
-		// slice.  However, the reflect package won't give us an interface on
-		// certain things like unexported struct fields in order to enforce
-		// visibility rules.  We use unsafe to bypass these restrictions since
-		// this package does not mutate the values.
-		vs := v
-		if !vs.CanInterface() || !vs.CanAddr() {
-			vs = unsafeReflectValue(vs)
-		}
-		vs = vs.Slice(0, numEntries)
+	if numEntries > 0 {
+		vt := v.Index(0).Type()
+		vts := vt.String()
+		switch {
+		// C types that need to be converted.
+		case cCharRE.MatchString(vts):
+			fallthrough
+		case cUnsignedCharRE.MatchString(vts):
+			fallthrough
+		case cUint8tCharRE.MatchString(vts):
+			doConvert = true
 
-		// Type assert a uint8 slice and hexdump it.  Also fix indentation
-		// based on the depth.
-		iface := vs.Interface()
-		if buf, ok := iface.([]uint8); ok {
-			indent := strings.Repeat(d.cs.Indent, d.depth)
-			str := indent + hex.Dump(buf)
-			str = strings.Replace(str, "\n", "\n"+indent, -1)
-			str = strings.TrimRight(str, d.cs.Indent)
-			d.w.Write([]byte(str))
-			return
+		// Try to use existing uint8 slices and fall back to converting
+		// and copying if that fails.
+		case vt.Kind() == reflect.Uint8:
+			// We need an addressable interface to convert the type back
+			// into a byte slice.  However, the reflect package won't give
+			// us an interface on certain things like unexported struct
+			// fields in order to enforce visibility rules.  We use unsafe
+			// to bypass these restrictions since this package does not
+			// mutate the values.
+			vs := v
+			if !vs.CanInterface() || !vs.CanAddr() {
+				vs = unsafeReflectValue(vs)
+			}
+			vs = vs.Slice(0, numEntries)
+
+			// Use the existing uint8 slice if it can be type
+			// asserted.
+			iface := vs.Interface()
+			if slice, ok := iface.([]uint8); ok {
+				buf = slice
+				doHexDump = true
+				break
+			}
+
+			// The underlying data needs to be converted if it can't
+			// be type asserted to a uint8 slice.
+			doConvert = true
 		}
-		// We shouldn't ever get here, but the return is intentionally in the
-		// above if statement to ensure we fall through to normal behavior if
-		// the type assertion fails for some reason.
+
+		// Copy and convert the underlying type if needed.
+		if doConvert && vt.ConvertibleTo(uint8Type) {
+			// Convert and copy each element into a uint8 byte
+			// slice.
+			buf = make([]uint8, numEntries)
+			for i := 0; i < numEntries; i++ {
+				vv := v.Index(i)
+				buf[i] = uint8(vv.Convert(uint8Type).Uint())
+			}
+			doHexDump = true
+		}
+	}
+
+	// Hexdump the entire slice as needed.
+	if doHexDump {
+		indent := strings.Repeat(d.cs.Indent, d.depth)
+		str := indent + hex.Dump(buf)
+		str = strings.Replace(str, "\n", "\n"+indent, -1)
+		str = strings.TrimRight(str, d.cs.Indent)
+		d.w.Write([]byte(str))
+		return
 	}
 
 	// Recursively call dump for each item.
