@@ -561,7 +561,6 @@ func addMapDumpTests() {
 	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
 	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
 	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
-
 }
 
 func addStructDumpTests() {
@@ -884,6 +883,7 @@ func TestDump(t *testing.T) {
 	addCircularDumpTests()
 	addPanicDumpTests()
 	addErrorDumpTests()
+	addCgoDumpTests()
 
 	t.Logf("Running %d tests", len(dumpTests))
 	for i, test := range dumpTests {
