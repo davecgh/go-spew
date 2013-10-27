@@ -1472,3 +1472,12 @@ func TestFormatter(t *testing.T) {
 		}
 	}
 }
+
+func TestPrintSortedKeys(t *testing.T) {
+	cfg := spew.ConfigState{SortKeys: true}
+	s := cfg.Sprint(map[int]string{1: "1", 3: "3", 2: "2"})
+	expected := "map[1:1 2:2 3:3]"
+	if s != expected {
+		t.Errorf("Sorted keys mismatch:\n  %v %v", s, expected)
+	}
+}
