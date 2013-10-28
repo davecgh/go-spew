@@ -269,29 +269,17 @@ func (s *valuesSorter) Less(i, j int) bool {
 	case reflect.Uintptr:
 		return s.values[i].UnsafeAddr() < s.values[j].UnsafeAddr()
 	}
-	panic("notimplemented")
+	return s.values[i].String() < s.values[j].String()
 }
 
 // Generic sort function for native types: int, uint, bool, string and uintptr.
-// Other inputs are left unchanged.
+// Other inputs are sort according to their Value.String() value to ensure
+// display stability.
 func SortValues(values []reflect.Value) {
 	if len(values) == 0 {
 		return
 	}
-	switch values[0].Kind() {
-	case reflect.Bool:
-		sort.Sort(&valuesSorter{values})
-	case reflect.Float32, reflect.Float64:
-		sort.Sort(&valuesSorter{values})
-	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		sort.Sort(&valuesSorter{values})
-	case reflect.String:
-		sort.Sort(&valuesSorter{values})
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		sort.Sort(&valuesSorter{values})
-	case reflect.Uintptr:
-		sort.Sort(&valuesSorter{values})
-	}
+	sort.Sort(&valuesSorter{values})
 }
 
 // dump is the main workhorse for dumping a value.  It uses the passed reflect
