@@ -272,9 +272,9 @@ func (s *valuesSorter) Less(i, j int) bool {
 	return s.values[i].String() < s.values[j].String()
 }
 
-// Generic sort function for native types: int, uint, bool, string and uintptr.
-// Other inputs are sort according to their Value.String() value to ensure
-// display stability.
+// SortValues is a generic sort function for native types: int, uint, bool,
+// string and uintptr.  Other inputs are sorted according to their
+// Value.String() value to ensure display stability.
 func SortValues(values []reflect.Value) {
 	if len(values) == 0 {
 		return

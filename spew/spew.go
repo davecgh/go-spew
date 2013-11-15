@@ -104,8 +104,6 @@ func Println(a ...interface{}) (n int, err error) {
 	return fmt.Println(convertArgs(a)...)
 }
 
-// Sprintf formats according to a format specifier and returns the resulting string.
-//
 // Sprint is a wrapper for fmt.Sprint that treats each argument as if it were
 // passed with a default Formatter interface returned by NewFormatter.  It
 // returns the resulting string.  See NewFormatter for formatting details.
