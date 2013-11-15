@@ -284,7 +284,7 @@ func (s *valuesSorter) Less(i, j int) bool {
 	case reflect.String:
 		return s.values[i].String() < s.values[j].String()
 	case reflect.Uintptr:
-		return s.values[i].UnsafeAddr() < s.values[j].UnsafeAddr()
+		return s.values[i].Uint() < s.values[j].Uint()
 	}
 	return s.values[i].String() < s.values[j].String()
 }
