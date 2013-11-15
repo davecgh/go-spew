@@ -65,6 +65,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
+	"reflect"
 	"testing"
 	"unsafe"
 )
@@ -894,5 +895,46 @@ func TestDump(t *testing.T) {
 			t.Errorf("Dump #%d\n got: %s %s", i, s, stringizeWants(test.wants))
 			continue
 		}
+	}
+}
+
+func TestSortValues(t *testing.T) {
+	v := reflect.ValueOf
+
+	a := v("a")
+	b := v("b")
+	c := v("c")
+	tests := []struct {
+		input    []reflect.Value
+		expected []reflect.Value
+	}{
+		{[]reflect.Value{v(2), v(1), v(3)},
+			[]reflect.Value{v(1), v(2), v(3)}},
+		{[]reflect.Value{v(2.), v(1.), v(3.)},
+			[]reflect.Value{v(1.), v(2.), v(3.)}},
+		{[]reflect.Value{v(false), v(true), v(false)},
+			[]reflect.Value{v(false), v(false), v(true)}},
+		{[]reflect.Value{b, a, c},
+			[]reflect.Value{a, b, c}},
+	}
+	for _, test := range tests {
+		spew.SortValues(test.input)
+		if !reflect.DeepEqual(test.input, test.expected) {
+			t.Errorf("Sort mismatch:\n %v != %v", test.input, test.expected)
+		}
+	}
+}
+
+func TestDumpSortedKeys(t *testing.T) {
+	cfg := spew.ConfigState{SortKeys: true}
+	s := cfg.Sdump(map[int]string{1: "1", 3: "3", 2: "2"})
+	expected := `(map[int]string) {
+(int) 1: (string) "1",
+(int) 2: (string) "2",
+(int) 3: (string) "3"
+}
+`
+	if s != expected {
+		t.Errorf("Sorted keys mismatch:\n  %v %v", s, expected)
 	}
 }

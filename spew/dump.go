@@ -24,6 +24,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -241,6 +242,46 @@ func (d *dumpState) dumpSlice(v reflect.Value) {
 	}
 }
 
+type valuesSorter struct {
+	values []reflect.Value
+}
+
+func (s *valuesSorter) Len() int {
+	return len(s.values)
+}
+
+func (s *valuesSorter) Swap(i, j int) {
+	s.values[i], s.values[j] = s.values[j], s.values[i]
+}
+
+func (s *valuesSorter) Less(i, j int) bool {
+	switch s.values[i].Kind() {
+	case reflect.Bool:
+		return !s.values[i].Bool() && s.values[j].Bool()
+	case reflect.Float32, reflect.Float64:
+		return s.values[i].Float() < s.values[j].Float()
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return s.values[i].Int() < s.values[j].Int()
+	case reflect.String:
+		return s.values[i].String() < s.values[j].String()
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		return s.values[i].Uint() < s.values[j].Uint()
+	case reflect.Uintptr:
+		return s.values[i].UnsafeAddr() < s.values[j].UnsafeAddr()
+	}
+	return s.values[i].String() < s.values[j].String()
+}
+
+// Generic sort function for native types: int, uint, bool, string and uintptr.
+// Other inputs are sort according to their Value.String() value to ensure
+// display stability.
+func SortValues(values []reflect.Value) {
+	if len(values) == 0 {
+		return
+	}
+	sort.Sort(&valuesSorter{values})
+}
+
 // dump is the main workhorse for dumping a value.  It uses the passed reflect
 // value to figure out what kind of object we are dealing with and formats it
 // appropriately.  It is a recursive function, however circular data structures
@@ -349,6 +390,9 @@ func (d *dumpState) dump(v reflect.Value) {
 		} else {
 			numEntries := v.Len()
 			keys := v.MapKeys()
+			if d.cs.SortKeys {
+				SortValues(keys)
+			}
 			for i, key := range keys {
 				d.dump(d.unpackValue(key))
 				d.w.Write(colonSpaceBytes)
