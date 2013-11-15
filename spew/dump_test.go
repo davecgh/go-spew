@@ -65,7 +65,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
-	"reflect"
 	"testing"
 	"unsafe"
 )

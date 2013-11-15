@@ -18,6 +18,9 @@ package spew_test
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
+	"reflect"
+	"testing"
 )
 
 // custom type to test Stinger interface on non-pointer receiver.
