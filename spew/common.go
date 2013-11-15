@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strconv"
 	"unsafe"
 )
@@ -248,4 +249,52 @@ func printHexPtr(w io.Writer, p uintptr) {
 	// Strip unused leading bytes.
 	buf = buf[i:]
 	w.Write(buf)
+}
+
+// valuesSorter implements sort.Interface to allow a slice of reflect.Value
+// elements to be sorted.
+type valuesSorter struct {
+	values []reflect.Value
+}
+
+// Len returns the number of values in the slice.  It is part of the
+// sort.Interface implementation.
+func (s *valuesSorter) Len() int {
+	return len(s.values)
+}
+
+// Swap swaps the values at the passed indices.  It is part of the
+// sort.Interface implementation.
+func (s *valuesSorter) Swap(i, j int) {
+	s.values[i], s.values[j] = s.values[j], s.values[i]
+}
+
+// Less returns whether the value at index i should sort before the
+// value at index j.  It is part of the sort.Interface implementation.
+func (s *valuesSorter) Less(i, j int) bool {
+	switch s.values[i].Kind() {
+	case reflect.Bool:
+		return !s.values[i].Bool() && s.values[j].Bool()
+	case reflect.Float32, reflect.Float64:
+		return s.values[i].Float() < s.values[j].Float()
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return s.values[i].Int() < s.values[j].Int()
+	case reflect.String:
+		return s.values[i].String() < s.values[j].String()
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		return s.values[i].Uint() < s.values[j].Uint()
+	case reflect.Uintptr:
+		return s.values[i].UnsafeAddr() < s.values[j].UnsafeAddr()
+	}
+	return s.values[i].String() < s.values[j].String()
+}
+
+// sortValues is a generic sort function for native types: int, uint, bool,
+// string and uintptr.  Other inputs are sorted according to their
+// Value.String() value to ensure display stability.
+func sortValues(values []reflect.Value) {
+	if len(values) == 0 {
+		return
+	}
+	sort.Sort(&valuesSorter{values})
 }

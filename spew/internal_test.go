@@ -155,3 +155,9 @@ func TestAddedReflectValue(t *testing.T) {
 		t.Errorf("TestAddedReflectValue #%d got: %s want: %s", i, s, want)
 	}
 }
+
+// SortValues makes the internal sortValues function available to the test
+// package.
+func SortValues(values []reflect.Value) {
+	sortValues(values)
+}

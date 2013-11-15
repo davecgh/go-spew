@@ -303,7 +303,7 @@ func (f *formatState) format(v reflect.Value) {
 		} else {
 			keys := v.MapKeys()
 			if f.cs.SortKeys {
-				SortValues(keys)
+				sortValues(keys)
 			}
 			for i, key := range keys {
 				if i > 0 {
