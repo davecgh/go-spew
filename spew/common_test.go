@@ -121,25 +121,52 @@ func TestSortValues(t *testing.T) {
 	a := v("a")
 	b := v("b")
 	c := v("c")
+	embedA := v(embed{"a"})
+	embedB := v(embed{"b"})
+	embedC := v(embed{"c"})
 	tests := []struct {
 		input    []reflect.Value
 		expected []reflect.Value
 	}{
+		// No values.
 		{
-			[]reflect.Value{v(2), v(1), v(3)},
-			[]reflect.Value{v(1), v(2), v(3)},
+			[]reflect.Value{},
+			[]reflect.Value{},
 		},
-		{
-			[]reflect.Value{v(2.), v(1.), v(3.)},
-			[]reflect.Value{v(1.), v(2.), v(3.)},
-		},
+		// Bools.
 		{
 			[]reflect.Value{v(false), v(true), v(false)},
 			[]reflect.Value{v(false), v(false), v(true)},
 		},
+		// Ints.
+		{
+			[]reflect.Value{v(2), v(1), v(3)},
+			[]reflect.Value{v(1), v(2), v(3)},
+		},
+		// Uints.
+		{
+			[]reflect.Value{v(uint8(2)), v(uint8(1)), v(uint8(3))},
+			[]reflect.Value{v(uint8(1)), v(uint8(2)), v(uint8(3))},
+		},
+		// Floats.
+		{
+			[]reflect.Value{v(2.0), v(1.0), v(3.0)},
+			[]reflect.Value{v(1.0), v(2.0), v(3.0)},
+		},
+		// Strings.
 		{
 			[]reflect.Value{b, a, c},
 			[]reflect.Value{a, b, c},
+		},
+		// Uintptrs.
+		{
+			[]reflect.Value{v(uintptr(2)), v(uintptr(1)), v(uintptr(3))},
+			[]reflect.Value{v(uintptr(1)), v(uintptr(2)), v(uintptr(3))},
+		},
+		// Invalid.
+		{
+			[]reflect.Value{embedB, embedA, embedC},
+			[]reflect.Value{embedB, embedA, embedC},
 		},
 	}
 	for _, test := range tests {
