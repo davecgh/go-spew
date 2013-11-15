@@ -275,14 +275,14 @@ func (s *valuesSorter) Less(i, j int) bool {
 	switch s.values[i].Kind() {
 	case reflect.Bool:
 		return !s.values[i].Bool() && s.values[j].Bool()
-	case reflect.Float32, reflect.Float64:
-		return s.values[i].Float() < s.values[j].Float()
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		return s.values[i].Int() < s.values[j].Int()
-	case reflect.String:
-		return s.values[i].String() < s.values[j].String()
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 		return s.values[i].Uint() < s.values[j].Uint()
+	case reflect.Float32, reflect.Float64:
+		return s.values[i].Float() < s.values[j].Float()
+	case reflect.String:
+		return s.values[i].String() < s.values[j].String()
 	case reflect.Uintptr:
 		return s.values[i].UnsafeAddr() < s.values[j].UnsafeAddr()
 	}
