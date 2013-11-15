@@ -898,33 +898,6 @@ func TestDump(t *testing.T) {
 	}
 }
 
-func TestSortValues(t *testing.T) {
-	v := reflect.ValueOf
-
-	a := v("a")
-	b := v("b")
-	c := v("c")
-	tests := []struct {
-		input    []reflect.Value
-		expected []reflect.Value
-	}{
-		{[]reflect.Value{v(2), v(1), v(3)},
-			[]reflect.Value{v(1), v(2), v(3)}},
-		{[]reflect.Value{v(2.), v(1.), v(3.)},
-			[]reflect.Value{v(1.), v(2.), v(3.)}},
-		{[]reflect.Value{v(false), v(true), v(false)},
-			[]reflect.Value{v(false), v(false), v(true)}},
-		{[]reflect.Value{b, a, c},
-			[]reflect.Value{a, b, c}},
-	}
-	for _, test := range tests {
-		spew.SortValues(test.input)
-		if !reflect.DeepEqual(test.input, test.expected) {
-			t.Errorf("Sort mismatch:\n %v != %v", test.input, test.expected)
-		}
-	}
-}
-
 func TestDumpSortedKeys(t *testing.T) {
 	cfg := spew.ConfigState{SortKeys: true}
 	s := cfg.Sdump(map[int]string{1: "1", 3: "3", 2: "2"})
