@@ -75,9 +75,9 @@ type ConfigState struct {
 	ContinueOnMethod bool
 
 	// SortKeys specifies map keys should be sorted before being printed. Use
-	// this to have a more deterministic, diffable output. Note that only
-	// native types (bool, int, uint, floats, uintptr and string) are supported,
-	// other types will be sort according to the reflect.Value.String() output
+	// this to have a more deterministic, diffable output.  Note that only
+	// native types (bool, int, uint, floats, uintptr and string) are supported
+	// with other types sorted according to the reflect.Value.String() output
 	// which guarantees display stability.
 	SortKeys bool
 }

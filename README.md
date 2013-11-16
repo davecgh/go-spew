@@ -119,6 +119,14 @@ options. See the ConfigState documentation for more details.
 * ContinueOnMethod
 	Enables recursion into types after invoking error and Stringer interface
 	methods. Recursion after method invocation is disabled by default.
+
+* SortKeys
+	Specifies map keys should be sorted before being printed. Use
+	this to have a more deterministic, diffable output.  Note that
+	only native types (bool, int, uint, floats, uintptr and string)
+	are supported with other types sorted according to the
+	reflect.Value.String() output which guarantees display stability.
+	Natural map order is used by default.
 ```
 
 ## License
