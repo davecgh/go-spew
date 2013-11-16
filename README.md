@@ -14,6 +14,9 @@ post about it
 
 ## Documentation
 
+[![GoDoc](https://godoc.org/github.com/davecgh/go-spew/spew?status.png)]
+(http://godoc.org/github.com/davecgh/go-spew/spew)
+
 Full `go doc` style documentation for the project can be viewed online without
 installing this package by using the excellent GoDoc site here:
 http://godoc.org/github.com/davecgh/go-spew/spew
