@@ -1,7 +1,7 @@
 go-spew
 =======
 
-[![Build Status](https://travis-ci.org/davecgh/go-spew.png)]
+[![Build Status](https://travis-ci.org/davecgh/go-spew.png?branch=master)]
 (https://travis-ci.org/davecgh/go-spew)
 
 Go-spew implements a deep pretty printer for Go data structures to aid in
