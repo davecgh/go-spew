@@ -282,6 +282,7 @@ func (c *ConfigState) convertArgs(args []interface{}) (formatters []interface{})
 // 	DisableMethods: false
 // 	DisablePointerMethods: false
 // 	ContinueOnMethod: false
+// 	SortKeys: false
 func NewDefaultConfig() *ConfigState {
 	return &ConfigState{Indent: " "}
 }
