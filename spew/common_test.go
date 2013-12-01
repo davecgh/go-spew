@@ -116,6 +116,14 @@ func testFailed(result string, wants []string) bool {
 // TestSortValues ensures the sort functionality for relect.Value based sorting
 // works as intended.
 func TestSortValues(t *testing.T) {
+	getInterfaces := func(values []reflect.Value) []interface{} {
+		interfaces := []interface{}{}
+		for _, v := range values {
+			interfaces = append(interfaces, v.Interface())
+		}
+		return interfaces
+	}
+
 	v := reflect.ValueOf
 
 	a := v("a")
@@ -171,8 +179,14 @@ func TestSortValues(t *testing.T) {
 	}
 	for _, test := range tests {
 		spew.SortValues(test.input)
-		if !reflect.DeepEqual(test.input, test.expected) {
-			t.Errorf("Sort mismatch:\n %v != %v", test.input, test.expected)
+		// reflect.DeepEqual cannot really make sense of reflect.Value,
+		// probably because of all the pointer tricks. For instance,
+		// v(2.0) != v(2.0) on a 32-bits system. Turn them into interface{}
+		// instead.
+		input := getInterfaces(test.input)
+		expected := getInterfaces(test.expected)
+		if !reflect.DeepEqual(input, expected) {
+			t.Errorf("Sort mismatch:\n %v != %v", input, expected)
 		}
 	}
 }
