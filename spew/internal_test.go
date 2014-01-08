@@ -92,8 +92,7 @@ const flagKindWidth = 5
 // fallback code which punts to the standard fmt library for new types that
 // might get added to the language.
 func changeKind(v *reflect.Value, readOnly bool) {
-	rvf := (*uintptr)(unsafe.Pointer(uintptr(unsafe.Pointer(v)) +
-		unsafe.Offsetof(reflectValue.flag)))
+	rvf := (*uintptr)(unsafe.Pointer(uintptr(unsafe.Pointer(v)) + offsetFlag))
 	*rvf = *rvf | ((1<<flagKindWidth - 1) << flagKindShift)
 	if readOnly {
 		*rvf |= flagRO

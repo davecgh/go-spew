@@ -25,11 +25,53 @@ import (
 	"unsafe"
 )
 
-// reflectValue mirrors the struct layout of the reflect package Value type.
-var reflectValue struct {
+// offsetPtr, offsetScalar, and offsetFlag are the offsets for the internal
+// reflect.Value fields.
+var offsetPtr, offsetScalar, offsetFlag uintptr
+
+// reflectValueOld mirrors the struct layout of the reflect package Value type
+// before golang commit ecccf07e7f9d.
+var reflectValueOld struct {
 	typ  unsafe.Pointer
 	val  unsafe.Pointer
 	flag uintptr
+}
+
+// reflectValueNew mirrors the struct layout of the reflect package Value type
+// after golang commit ecccf07e7f9d.
+var reflectValueNew struct {
+	typ    unsafe.Pointer
+	ptr    unsafe.Pointer
+	scalar uintptr
+	flag   uintptr
+}
+
+func init() {
+	// Older versions of reflect.Value stored small integers directly in the
+	// ptr field (which is named val in the older versions).  Newer versions
+	// added a new field named scalar for this purpose which unfortuantely
+	// comes before the flag field.  Further the new field is before the
+	// flag field, so the offset of the flag field is different as well.
+	// This code constructs a new reflect.Value from a known small integer
+	// and checks if the val field within it matches.  When it matches, the
+	// old style reflect.Value is being used.  Otherwise it's the new style.
+	v := 0xf00
+	vv := reflect.ValueOf(v)
+	upv := unsafe.Pointer(uintptr(unsafe.Pointer(&vv)) +
+		unsafe.Offsetof(reflectValueOld.val))
+
+	// Assume the old style by default.
+	offsetPtr = unsafe.Offsetof(reflectValueOld.val)
+	offsetScalar = 0
+	offsetFlag = unsafe.Offsetof(reflectValueOld.flag)
+
+	// Use the new style offsets if the ptr field doesn't match the value
+	// since it must be in the new scalar field.
+	if int(*(*uintptr)(upv)) != v {
+		offsetPtr = unsafe.Offsetof(reflectValueNew.ptr)
+		offsetScalar = unsafe.Offsetof(reflectValueNew.scalar)
+		offsetFlag = unsafe.Offsetof(reflectValueNew.flag)
+	}
 }
 
 // flagIndir indicates whether the value field of a reflect.Value is the actual
@@ -48,11 +90,13 @@ const flagIndir = 1 << 1
 func unsafeReflectValue(v reflect.Value) (rv reflect.Value) {
 	indirects := 1
 	vt := v.Type()
-	upv := unsafe.Pointer(uintptr(unsafe.Pointer(&v)) + unsafe.Offsetof(reflectValue.val))
-	rvf := *(*uintptr)(unsafe.Pointer(uintptr(unsafe.Pointer(&v)) + unsafe.Offsetof(reflectValue.flag)))
+	upv := unsafe.Pointer(uintptr(unsafe.Pointer(&v)) + offsetPtr)
+	rvf := *(*uintptr)(unsafe.Pointer(uintptr(unsafe.Pointer(&v)) + offsetFlag))
 	if rvf&flagIndir != 0 {
 		vt = reflect.PtrTo(v.Type())
 		indirects++
+	} else if offsetScalar != 0 {
+		upv = unsafe.Pointer(uintptr(unsafe.Pointer(&v)) + offsetScalar)
 	}
 
 	pv := reflect.NewAt(vt, upv)
