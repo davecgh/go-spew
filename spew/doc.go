@@ -143,7 +143,7 @@ command as shown.
 
 Custom Formatter
 
-Spew provides a custom formatter the implements the fmt.Formatter interface
+Spew provides a custom formatter that implements the fmt.Formatter interface
 so that it integrates cleanly with standard fmt package printing functions. The
 formatter is useful for inline printing of smaller data types similar to the
 standard %v format specifier.
