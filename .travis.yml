@@ -8,4 +8,4 @@ after_success:
     - go get -v github.com/mattn/goveralls
     - export PATH=$PATH:$HOME/gopath/bin
     - cd ./spew
-    - goveralls -v -service travis-ci
+    - goveralls coverprofile=profile.cov -service=travis-ci
