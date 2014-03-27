@@ -3,8 +3,8 @@ go-spew
 
 [![Build Status](https://travis-ci.org/davecgh/go-spew.png?branch=master)]
 (https://travis-ci.org/davecgh/go-spew) [![Coverage Status]
-(https://coveralls.io/repos/davecgh/go-spew/badge.png)]
-(https://coveralls.io/r/davecgh/go-spew)
+(https://coveralls.io/repos/davecgh/go-spew/badge.png?branch=master)]
+(https://coveralls.io/r/davecgh/go-spew?branch=master)
 
 Go-spew implements a deep pretty printer for Go data structures to aid in
 debugging.  A comprehensive suite of tests with 100% test coverage is provided
