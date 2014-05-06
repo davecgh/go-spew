@@ -128,14 +128,14 @@ shown here.
 	  flag: (main.Flag) flagTwo,
 	  data: (uintptr) <nil>
 	 }),
-	 ExportedField: (map[interface {}]interface {}) {
-	  (string) "one": (bool) true
+	 ExportedField: (map[interface {}]interface {}) (len=1) {
+	  (string) (len=3) "one": (bool) true
 	 }
 	}
 
 Byte (and uint8) arrays and slices are displayed uniquely like the hexdump -C
 command as shown.
-	([]uint8) {
+	([]uint8) (len=32 cap=32) {
 	 00000000  11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f 20  |............... |
 	 00000010  21 22 23 24 25 26 27 28  29 2a 2b 2c 2d 2e 2f 30  |!"#$%&'()*+,-./0|
 	 00000020  31 32                                             |12|
