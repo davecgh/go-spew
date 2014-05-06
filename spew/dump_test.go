@@ -304,33 +304,50 @@ func addComplexDumpTests() {
 func addArrayDumpTests() {
 	// Array containing standard ints.
 	v := [3]int{1, 2, 3}
+	vLen := fmt.Sprintf("%d", len(v))
+	vCap := fmt.Sprintf("%d", cap(v))
 	nv := (*[3]int)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
 	vt := "int"
-	vs := "{\n (" + vt + ") 1,\n (" + vt + ") 2,\n (" + vt + ") 3\n}"
+	vs := "(len=" + vLen + " cap=" + vCap + ") {\n (" + vt + ") 1,\n (" +
+		vt + ") 2,\n (" + vt + ") 3\n}"
 	addDumpTest(v, "([3]"+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*[3]"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**[3]"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
 	addDumpTest(nv, "(*[3]"+vt+")(<nil>)\n")
 
 	// Array containing type with custom formatter on pointer receiver only.
-	v2 := [3]pstringer{"1", "2", "3"}
+	v2i0 := pstringer("1")
+	v2i1 := pstringer("2")
+	v2i2 := pstringer("3")
+	v2 := [3]pstringer{v2i0, v2i1, v2i2}
+	v2i0Len := fmt.Sprintf("%d", len(v2i0))
+	v2i1Len := fmt.Sprintf("%d", len(v2i1))
+	v2i2Len := fmt.Sprintf("%d", len(v2i2))
+	v2Len := fmt.Sprintf("%d", len(v2))
+	v2Cap := fmt.Sprintf("%d", cap(v2))
 	nv2 := (*[3]pstringer)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
 	v2t := "spew_test.pstringer"
-	v2s := "{\n (" + v2t + ") stringer 1,\n (" + v2t + ") stringer 2,\n (" +
-		v2t + ") stringer 3\n}"
+	v2s := "(len=" + v2Len + " cap=" + v2Cap + ") {\n (" + v2t + ") (len=" +
+		v2i0Len + ") stringer 1,\n (" + v2t + ") (len=" + v2i1Len +
+		") stringer 2,\n (" + v2t + ") (len=" + v2i2Len + ") " +
+		"stringer 3\n}"
 	addDumpTest(v2, "([3]"+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*[3]"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**[3]"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
 	addDumpTest(nv2, "(*[3]"+v2t+")(<nil>)\n")
 
 	// Array containing interfaces.
-	v3 := [3]interface{}{"one", int(2), uint(3)}
+	v3i0 := "one"
+	v3 := [3]interface{}{v3i0, int(2), uint(3)}
+	v3i0Len := fmt.Sprintf("%d", len(v3i0))
+	v3Len := fmt.Sprintf("%d", len(v3))
+	v3Cap := fmt.Sprintf("%d", cap(v3))
 	nv3 := (*[3]interface{})(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
@@ -339,8 +356,9 @@ func addArrayDumpTests() {
 	v3t2 := "string"
 	v3t3 := "int"
 	v3t4 := "uint"
-	v3s := "{\n (" + v3t2 + ") \"one\",\n (" + v3t3 + ") 2,\n (" + v3t4 +
-		") 3\n}"
+	v3s := "(len=" + v3Len + " cap=" + v3Cap + ") {\n (" + v3t2 + ") " +
+		"(len=" + v3i0Len + ") \"one\",\n (" + v3t3 + ") 2,\n (" +
+		v3t4 + ") 3\n}"
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
@@ -354,12 +372,15 @@ func addArrayDumpTests() {
 		0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30,
 		0x31, 0x32,
 	}
+	v4Len := fmt.Sprintf("%d", len(v4))
+	v4Cap := fmt.Sprintf("%d", cap(v4))
 	nv4 := (*[34]byte)(nil)
 	pv4 := &v4
 	v4Addr := fmt.Sprintf("%p", pv4)
 	pv4Addr := fmt.Sprintf("%p", &pv4)
 	v4t := "[34]uint8"
-	v4s := "{\n 00000000  11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f 20" +
+	v4s := "(len=" + v4Len + " cap=" + v4Cap + ") " +
+		"{\n 00000000  11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f 20" +
 		"  |............... |\n" +
 		" 00000010  21 22 23 24 25 26 27 28  29 2a 2b 2c 2d 2e 2f 30" +
 		"  |!\"#$%&'()*+,-./0|\n" +
@@ -374,33 +395,50 @@ func addArrayDumpTests() {
 func addSliceDumpTests() {
 	// Slice containing standard float32 values.
 	v := []float32{3.14, 6.28, 12.56}
+	vLen := fmt.Sprintf("%d", len(v))
+	vCap := fmt.Sprintf("%d", cap(v))
 	nv := (*[]float32)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
 	vt := "float32"
-	vs := "{\n (" + vt + ") 3.14,\n (" + vt + ") 6.28,\n (" + vt + ") 12.56\n}"
+	vs := "(len=" + vLen + " cap=" + vCap + ") {\n (" + vt + ") 3.14,\n (" +
+		vt + ") 6.28,\n (" + vt + ") 12.56\n}"
 	addDumpTest(v, "([]"+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*[]"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**[]"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
 	addDumpTest(nv, "(*[]"+vt+")(<nil>)\n")
 
 	// Slice containing type with custom formatter on pointer receiver only.
-	v2 := []pstringer{"1", "2", "3"}
+	v2i0 := pstringer("1")
+	v2i1 := pstringer("2")
+	v2i2 := pstringer("3")
+	v2 := []pstringer{v2i0, v2i1, v2i2}
+	v2i0Len := fmt.Sprintf("%d", len(v2i0))
+	v2i1Len := fmt.Sprintf("%d", len(v2i1))
+	v2i2Len := fmt.Sprintf("%d", len(v2i2))
+	v2Len := fmt.Sprintf("%d", len(v2))
+	v2Cap := fmt.Sprintf("%d", cap(v2))
 	nv2 := (*[]pstringer)(nil)
 	pv2 := &v2
 	v2Addr := fmt.Sprintf("%p", pv2)
 	pv2Addr := fmt.Sprintf("%p", &pv2)
 	v2t := "spew_test.pstringer"
-	v2s := "{\n (" + v2t + ") stringer 1,\n (" + v2t + ") stringer 2,\n (" +
-		v2t + ") stringer 3\n}"
+	v2s := "(len=" + v2Len + " cap=" + v2Cap + ") {\n (" + v2t + ") (len=" +
+		v2i0Len + ") stringer 1,\n (" + v2t + ") (len=" + v2i1Len +
+		") stringer 2,\n (" + v2t + ") (len=" + v2i2Len + ") " +
+		"stringer 3\n}"
 	addDumpTest(v2, "([]"+v2t+") "+v2s+"\n")
 	addDumpTest(pv2, "(*[]"+v2t+")("+v2Addr+")("+v2s+")\n")
 	addDumpTest(&pv2, "(**[]"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
 	addDumpTest(nv2, "(*[]"+v2t+")(<nil>)\n")
 
 	// Slice containing interfaces.
-	v3 := []interface{}{"one", int(2), uint(3), nil}
+	v3i0 := "one"
+	v3 := []interface{}{v3i0, int(2), uint(3), nil}
+	v3i0Len := fmt.Sprintf("%d", len(v3i0))
+	v3Len := fmt.Sprintf("%d", len(v3))
+	v3Cap := fmt.Sprintf("%d", cap(v3))
 	nv3 := (*[]interface{})(nil)
 	pv3 := &v3
 	v3Addr := fmt.Sprintf("%p", pv3)
@@ -410,8 +448,9 @@ func addSliceDumpTests() {
 	v3t3 := "int"
 	v3t4 := "uint"
 	v3t5 := "interface {}"
-	v3s := "{\n (" + v3t2 + ") \"one\",\n (" + v3t3 + ") 2,\n (" + v3t4 +
-		") 3,\n (" + v3t5 + ") <nil>\n}"
+	v3s := "(len=" + v3Len + " cap=" + v3Cap + ") {\n (" + v3t2 + ") " +
+		"(len=" + v3i0Len + ") \"one\",\n (" + v3t3 + ") 2,\n (" +
+		v3t4 + ") 3,\n (" + v3t5 + ") <nil>\n}"
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
@@ -425,12 +464,15 @@ func addSliceDumpTests() {
 		0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30,
 		0x31, 0x32,
 	}
+	v4Len := fmt.Sprintf("%d", len(v4))
+	v4Cap := fmt.Sprintf("%d", cap(v4))
 	nv4 := (*[]byte)(nil)
 	pv4 := &v4
 	v4Addr := fmt.Sprintf("%p", pv4)
 	pv4Addr := fmt.Sprintf("%p", &pv4)
 	v4t := "[]uint8"
-	v4s := "{\n 00000000  11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f 20" +
+	v4s := "(len=" + v4Len + " cap=" + v4Cap + ") " +
+		"{\n 00000000  11 12 13 14 15 16 17 18  19 1a 1b 1c 1d 1e 1f 20" +
 		"  |............... |\n" +
 		" 00000010  21 22 23 24 25 26 27 28  29 2a 2b 2c 2d 2e 2f 30" +
 		"  |!\"#$%&'()*+,-./0|\n" +
@@ -458,12 +500,13 @@ func addSliceDumpTests() {
 func addStringDumpTests() {
 	// Standard string.
 	v := "test"
+	vLen := fmt.Sprintf("%d", len(v))
 	nv := (*string)(nil)
 	pv := &v
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
 	vt := "string"
-	vs := "\"test\""
+	vs := "(len=" + vLen + ") \"test\""
 	addDumpTest(v, "("+vt+") "+vs+"\n")
 	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
 	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
@@ -498,69 +541,90 @@ func addInterfaceDumpTests() {
 
 func addMapDumpTests() {
 	// Map with string keys and int vals.
-	v := map[string]int{"one": 1, "two": 2}
-	nv := (*map[string]int)(nil)
-	pv := &v
-	vAddr := fmt.Sprintf("%p", pv)
-	pvAddr := fmt.Sprintf("%p", &pv)
-	vt := "map[string]int"
-	vt1 := "string"
-	vt2 := "int"
-	vs := "{\n (" + vt1 + ") \"one\": (" + vt2 + ") 1,\n (" + vt1 +
-		") \"two\": (" + vt2 + ") 2\n}"
-	vs2 := "{\n (" + vt1 + ") \"two\": (" + vt2 + ") 2,\n (" + vt1 +
-		") \"one\": (" + vt2 + ") 1\n}"
-	addDumpTest(v, "("+vt+") "+vs+"\n", "("+vt+") "+vs2+"\n")
-	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n",
-		"(*"+vt+")("+vAddr+")("+vs2+")\n")
-	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n",
-		"(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs2+")\n")
-	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
+	k := "one"
+	kk := "two"
+	m := map[string]int{k: 1, kk: 2}
+	klen := fmt.Sprintf("%d", len(k)) // not kLen to shut golint up
+	kkLen := fmt.Sprintf("%d", len(kk))
+	mLen := fmt.Sprintf("%d", len(m))
+	nm := (*map[string]int)(nil)
+	pm := &m
+	mAddr := fmt.Sprintf("%p", pm)
+	pmAddr := fmt.Sprintf("%p", &pm)
+	mt := "map[string]int"
+	mt1 := "string"
+	mt2 := "int"
+	ms := "(len=" + mLen + ") {\n (" + mt1 + ") (len=" + klen + ") " +
+		"\"one\": (" + mt2 + ") 1,\n (" + mt1 + ") (len=" + kkLen +
+		") \"two\": (" + mt2 + ") 2\n}"
+	ms2 := "(len=" + mLen + ") {\n (" + mt1 + ") (len=" + kkLen + ") " +
+		"\"two\": (" + mt2 + ") 2,\n (" + mt1 + ") (len=" + klen +
+		") \"one\": (" + mt2 + ") 1\n}"
+	addDumpTest(m, "("+mt+") "+ms+"\n", "("+mt+") "+ms2+"\n")
+	addDumpTest(pm, "(*"+mt+")("+mAddr+")("+ms+")\n",
+		"(*"+mt+")("+mAddr+")("+ms2+")\n")
+	addDumpTest(&pm, "(**"+mt+")("+pmAddr+"->"+mAddr+")("+ms+")\n",
+		"(**"+mt+")("+pmAddr+"->"+mAddr+")("+ms2+")\n")
+	addDumpTest(nm, "(*"+mt+")(<nil>)\n")
 
 	// Map with custom formatter type on pointer receiver only keys and vals.
-	v2 := map[pstringer]pstringer{"one": "1"}
-	nv2 := (*map[pstringer]pstringer)(nil)
-	pv2 := &v2
-	v2Addr := fmt.Sprintf("%p", pv2)
-	pv2Addr := fmt.Sprintf("%p", &pv2)
-	v2t := "map[spew_test.pstringer]spew_test.pstringer"
-	v2t1 := "spew_test.pstringer"
-	v2t2 := "spew_test.pstringer"
-	v2s := "{\n (" + v2t1 + ") stringer one: (" + v2t2 + ") stringer 1\n}"
-	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
-	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
-	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
-	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
+	k2 := pstringer("one")
+	v2 := pstringer("1")
+	m2 := map[pstringer]pstringer{k2: v2}
+	k2Len := fmt.Sprintf("%d", len(k2))
+	v2Len := fmt.Sprintf("%d", len(v2))
+	m2Len := fmt.Sprintf("%d", len(m2))
+	nm2 := (*map[pstringer]pstringer)(nil)
+	pm2 := &m2
+	m2Addr := fmt.Sprintf("%p", pm2)
+	pm2Addr := fmt.Sprintf("%p", &pm2)
+	m2t := "map[spew_test.pstringer]spew_test.pstringer"
+	m2t1 := "spew_test.pstringer"
+	m2t2 := "spew_test.pstringer"
+	m2s := "(len=" + m2Len + ") {\n (" + m2t1 + ") (len=" + k2Len + ") " +
+		"stringer one: (" + m2t2 + ") (len=" + v2Len + ") stringer 1\n}"
+	addDumpTest(m2, "("+m2t+") "+m2s+"\n")
+	addDumpTest(pm2, "(*"+m2t+")("+m2Addr+")("+m2s+")\n")
+	addDumpTest(&pm2, "(**"+m2t+")("+pm2Addr+"->"+m2Addr+")("+m2s+")\n")
+	addDumpTest(nm2, "(*"+m2t+")(<nil>)\n")
 
 	// Map with interface keys and values.
-	v3 := map[interface{}]interface{}{"one": 1}
-	nv3 := (*map[interface{}]interface{})(nil)
-	pv3 := &v3
-	v3Addr := fmt.Sprintf("%p", pv3)
-	pv3Addr := fmt.Sprintf("%p", &pv3)
-	v3t := "map[interface {}]interface {}"
-	v3t1 := "string"
-	v3t2 := "int"
-	v3s := "{\n (" + v3t1 + ") \"one\": (" + v3t2 + ") 1\n}"
-	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
-	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
-	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
-	addDumpTest(nv3, "(*"+v3t+")(<nil>)\n")
+	k3 := "one"
+	k3Len := fmt.Sprintf("%d", len(k3))
+	m3 := map[interface{}]interface{}{k3: 1}
+	m3Len := fmt.Sprintf("%d", len(m3))
+	nm3 := (*map[interface{}]interface{})(nil)
+	pm3 := &m3
+	m3Addr := fmt.Sprintf("%p", pm3)
+	pm3Addr := fmt.Sprintf("%p", &pm3)
+	m3t := "map[interface {}]interface {}"
+	m3t1 := "string"
+	m3t2 := "int"
+	m3s := "(len=" + m3Len + ") {\n (" + m3t1 + ") (len=" + k3Len + ") " +
+		"\"one\": (" + m3t2 + ") 1\n}"
+	addDumpTest(m3, "("+m3t+") "+m3s+"\n")
+	addDumpTest(pm3, "(*"+m3t+")("+m3Addr+")("+m3s+")\n")
+	addDumpTest(&pm3, "(**"+m3t+")("+pm3Addr+"->"+m3Addr+")("+m3s+")\n")
+	addDumpTest(nm3, "(*"+m3t+")(<nil>)\n")
 
 	// Map with nil interface value.
-	v4 := map[string]interface{}{"nil": nil}
-	nv4 := (*map[string]interface{})(nil)
-	pv4 := &v4
-	v4Addr := fmt.Sprintf("%p", pv4)
-	pv4Addr := fmt.Sprintf("%p", &pv4)
-	v4t := "map[string]interface {}"
-	v4t1 := "string"
-	v4t2 := "interface {}"
-	v4s := "{\n (" + v4t1 + ") \"nil\": (" + v4t2 + ") <nil>\n}"
-	addDumpTest(v4, "("+v4t+") "+v4s+"\n")
-	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
-	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
-	addDumpTest(nv4, "(*"+v4t+")(<nil>)\n")
+	k4 := "nil"
+	k4Len := fmt.Sprintf("%d", len(k4))
+	m4 := map[string]interface{}{k4: nil}
+	m4Len := fmt.Sprintf("%d", len(m4))
+	nm4 := (*map[string]interface{})(nil)
+	pm4 := &m4
+	m4Addr := fmt.Sprintf("%p", pm4)
+	pm4Addr := fmt.Sprintf("%p", &pm4)
+	m4t := "map[string]interface {}"
+	m4t1 := "string"
+	m4t2 := "interface {}"
+	m4s := "(len=" + m4Len + ") {\n (" + m4t1 + ") (len=" + k4Len + ")" +
+		" \"nil\": (" + m4t2 + ") <nil>\n}"
+	addDumpTest(m4, "("+m4t+") "+m4s+"\n")
+	addDumpTest(pm4, "(*"+m4t+")("+m4Addr+")("+m4s+")\n")
+	addDumpTest(&pm4, "(**"+m4t+")("+pm4Addr+"->"+m4Addr+")("+m4s+")\n")
+	addDumpTest(nm4, "(*"+m4t+")(<nil>)\n")
 }
 
 func addStructDumpTests() {
@@ -618,8 +682,8 @@ func addStructDumpTests() {
 	pv3Addr := fmt.Sprintf("%p", &pv3)
 	v3t := "spew_test.s3"
 	v3t2 := "spew_test.pstringer"
-	v3s := "{\n s: (" + v3t2 + ") stringer test,\n S: (" + v3t2 +
-		") stringer test2\n}"
+	v3s := "{\n s: (" + v3t2 + ") (len=4) stringer test,\n S: (" + v3t2 +
+		") (len=5) stringer test2\n}"
 	addDumpTest(v3, "("+v3t+") "+v3s+"\n")
 	addDumpTest(pv3, "(*"+v3t+")("+v3Addr+")("+v3s+")\n")
 	addDumpTest(&pv3, "(**"+v3t+")("+pv3Addr+"->"+v3Addr+")("+v3s+")\n")
@@ -627,6 +691,7 @@ func addStructDumpTests() {
 
 	// Struct that contains embedded struct and field to same struct.
 	e := embed{"embedstr"}
+	eLen := fmt.Sprintf("%d", len("embedstr"))
 	v4 := embedwrap{embed: &e, e: &e}
 	nv4 := (*embedwrap)(nil)
 	pv4 := &v4
@@ -637,8 +702,9 @@ func addStructDumpTests() {
 	v4t2 := "spew_test.embed"
 	v4t3 := "string"
 	v4s := "{\n embed: (*" + v4t2 + ")(" + eAddr + ")({\n  a: (" + v4t3 +
-		") \"embedstr\"\n }),\n e: (*" + v4t2 + ")(" + eAddr + ")({\n" +
-		"  a: (" + v4t3 + ") \"embedstr\"\n })\n}"
+		") (len=" + eLen + ") \"embedstr\"\n }),\n e: (*" + v4t2 +
+		")(" + eAddr + ")({\n  a: (" + v4t3 + ") (len=" + eLen + ")" +
+		" \"embedstr\"\n })\n}"
 	addDumpTest(v4, "("+v4t+") "+v4s+"\n")
 	addDumpTest(pv4, "(*"+v4t+")("+v4Addr+")("+v4s+")\n")
 	addDumpTest(&pv4, "(**"+v4t+")("+pv4Addr+"->"+v4Addr+")("+v4s+")\n")
@@ -900,10 +966,10 @@ func TestDump(t *testing.T) {
 func TestDumpSortedKeys(t *testing.T) {
 	cfg := spew.ConfigState{SortKeys: true}
 	s := cfg.Sdump(map[int]string{1: "1", 3: "3", 2: "2"})
-	expected := `(map[int]string) {
-(int) 1: (string) "1",
-(int) 2: (string) "2",
-(int) 3: (string) "3"
+	expected := `(map[int]string) (len=3) {
+(int) 1: (string) (len=1) "1",
+(int) 2: (string) (len=1) "2",
+(int) 3: (string) (len=1) "3"
 }
 `
 	if s != expected {
