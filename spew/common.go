@@ -25,58 +25,71 @@ import (
 	"unsafe"
 )
 
-// offsetPtr, offsetScalar, and offsetFlag are the offsets for the internal
-// reflect.Value fields.
-var offsetPtr, offsetScalar, offsetFlag uintptr
+const (
+	// ptrSize is the size of a pointer on the current arch.
+	ptrSize = unsafe.Sizeof((*byte)(nil))
+)
 
-// reflectValueOld mirrors the struct layout of the reflect package Value type
-// before golang commit ecccf07e7f9d.
-var reflectValueOld struct {
-	typ  unsafe.Pointer
-	val  unsafe.Pointer
-	flag uintptr
-}
+var (
+	// offsetPtr, offsetScalar, and offsetFlag are the offsets for the
+	// internal reflect.Value fields.  These values are valid before golang
+	// commit ecccf07e7f9d which changed the format.  The are also valid
+	// after commit 82f48826c6c7 which changed the format again to mirror
+	// the original format.  Code in the init function updates these offsets
+	// as necessary.
+	offsetPtr    = uintptr(ptrSize)
+	offsetScalar = uintptr(0)
+	offsetFlag   = uintptr(ptrSize * 2)
 
-// reflectValueNew mirrors the struct layout of the reflect package Value type
-// after golang commit ecccf07e7f9d.
-var reflectValueNew struct {
-	typ    unsafe.Pointer
-	ptr    unsafe.Pointer
-	scalar uintptr
-	flag   uintptr
-}
+	// flagKindWidth and flagKindShift indicate various bits that the
+	// reflect package uses internally to track kind information.
+	//
+	// flagRO indicates whether or not the value field of a reflect.Value is
+	// read-only.
+	//
+	// flagIndir indicates whether the value field of a reflect.Value is
+	// the actual data or a pointer to the data.
+	//
+	// These values are valid before golang commit 90a7c3c86944 which
+	// changed their positions.  Code in the init function updates these
+	// flags as necessary.
+	flagKindWidth = uintptr(5)
+	flagKindShift = uintptr(flagKindWidth - 1)
+	flagRO        = uintptr(1 << 0)
+	flagIndir     = uintptr(1 << 1)
+)
 
 func init() {
 	// Older versions of reflect.Value stored small integers directly in the
-	// ptr field (which is named val in the older versions).  Newer versions
-	// added a new field named scalar for this purpose which unfortuantely
-	// comes before the flag field.  Further the new field is before the
-	// flag field, so the offset of the flag field is different as well.
+	// ptr field (which is named val in the older versions).  Versions
+	// between commits ecccf07e7f9d and 82f48826c6c7 added a new field named
+	// scalar for this purpose which unfortunately came before the flag
+	// field, so the offset of the flag field is different for those
+	// versions.
+	//
 	// This code constructs a new reflect.Value from a known small integer
-	// and checks if the val field within it matches.  When it matches, the
-	// old style reflect.Value is being used.  Otherwise it's the new style.
-	v := 0xf00
-	vv := reflect.ValueOf(v)
-	upv := unsafe.Pointer(uintptr(unsafe.Pointer(&vv)) +
-		unsafe.Offsetof(reflectValueOld.val))
+	// and checks if the size of the reflect.Value struct indicates it has
+	// the scalar field. When it does, the offsets are updated accordingly.
+	vv := reflect.ValueOf(0xf00)
+	if unsafe.Sizeof(vv) == (ptrSize * 4) {
+		offsetScalar = ptrSize * 2
+		offsetFlag = ptrSize * 3
+	}
 
-	// Assume the old style by default.
-	offsetPtr = unsafe.Offsetof(reflectValueOld.val)
-	offsetScalar = 0
-	offsetFlag = unsafe.Offsetof(reflectValueOld.flag)
-
-	// Use the new style offsets if the ptr field doesn't match the value
-	// since it must be in the new scalar field.
-	if int(*(*uintptr)(upv)) != v {
-		offsetPtr = unsafe.Offsetof(reflectValueNew.ptr)
-		offsetScalar = unsafe.Offsetof(reflectValueNew.scalar)
-		offsetFlag = unsafe.Offsetof(reflectValueNew.flag)
+	// Commit 90a7c3c86944 changed the flag positions such that the low
+	// order bits are the kind.  This code extracts the kind from the flags
+	// field and ensures it's the correct type.  When it's not, the flag
+	// order has been changed to the newer format, so the flags are updated
+	// accordingly.
+	upf := unsafe.Pointer(uintptr(unsafe.Pointer(&vv)) + offsetFlag)
+	upfv := *(*uintptr)(upf)
+	flagKindMask := uintptr((1<<flagKindWidth - 1) << flagKindShift)
+	if (upfv&flagKindMask)>>flagKindShift != uintptr(reflect.Int) {
+		flagKindShift = 0
+		flagRO = 1 << 5
+		flagIndir = 1 << 6
 	}
 }
-
-// flagIndir indicates whether the value field of a reflect.Value is the actual
-// data or a pointer to the data.
-const flagIndir = 1 << 1
 
 // unsafeReflectValue converts the passed reflect.Value into a one that bypasses
 // the typical safety restrictions preventing access to unaddressable and
