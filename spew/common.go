@@ -109,7 +109,19 @@ func unsafeReflectValue(v reflect.Value) (rv reflect.Value) {
 		vt = reflect.PtrTo(v.Type())
 		indirects++
 	} else if offsetScalar != 0 {
-		upv = unsafe.Pointer(uintptr(unsafe.Pointer(&v)) + offsetScalar)
+		// The value is in the scalar field when it's not one of the
+		// reference types.
+		switch vt.Kind() {
+		case reflect.Uintptr:
+		case reflect.Chan:
+		case reflect.Func:
+		case reflect.Map:
+		case reflect.Ptr:
+		case reflect.UnsafePointer:
+		default:
+			upv = unsafe.Pointer(uintptr(unsafe.Pointer(&v)) +
+				offsetScalar)
+		}
 	}
 
 	pv := reflect.NewAt(vt, upv)
