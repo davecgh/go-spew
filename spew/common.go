@@ -358,16 +358,6 @@ func valueSortLess(a, b reflect.Value) bool {
 	case reflect.Uintptr:
 		return a.Uint() < b.Uint()
 	case reflect.Array:
-		// Skip array types that do not support the == operator.
-		t := a.Type().Elem()
-		if t.Kind() == reflect.Interface {
-			t = a.Elem().Type()
-		}
-		switch t.Kind() {
-		case reflect.Slice, reflect.Map, reflect.Func:
-			goto unsupported
-		}
-
 		// Compare the contents of both arrays.
 		l := a.Len()
 		for i := 0; i < l; i++ {
@@ -380,8 +370,6 @@ func valueSortLess(a, b reflect.Value) bool {
 		}
 		return false
 	}
-
-unsupported:
 	return a.String() < b.String()
 }
 
