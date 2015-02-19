@@ -340,24 +340,56 @@ func (s *valuesSorter) Swap(i, j int) {
 	s.values[i], s.values[j] = s.values[j], s.values[i]
 }
 
+// valueSortLess returns whether the first value should sort before the second
+// value.  It is used by valueSorter.Less as part of the sort.Interface
+// implementation.
+func valueSortLess(a, b reflect.Value) bool {
+	switch a.Kind() {
+	case reflect.Bool:
+		return !a.Bool() && b.Bool()
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		return a.Int() < b.Int()
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		return a.Uint() < b.Uint()
+	case reflect.Float32, reflect.Float64:
+		return a.Float() < b.Float()
+	case reflect.String:
+		return a.String() < b.String()
+	case reflect.Uintptr:
+		return a.Uint() < b.Uint()
+	case reflect.Array:
+		// Skip array types that do not support the == operator.
+		t := a.Type().Elem()
+		if t.Kind() == reflect.Interface {
+			t = a.Elem().Type()
+		}
+		switch t.Kind() {
+		case reflect.Slice, reflect.Map, reflect.Func:
+			goto unsupported
+		}
+
+		// Compare the contents of both arrays.
+		al := a.Len()
+		bl := b.Len()
+		for i := 0; i < al && i < bl; i++ {
+			av := a.Index(i)
+			bv := b.Index(i)
+			if av.Interface() == bv.Interface() {
+				continue
+			}
+			return valueSortLess(av, bv)
+		}
+		return al < bl
+	}
+
+unsupported:
+	return a.String() < b.String()
+}
+
 // Less returns whether the value at index i should sort before the
 // value at index j.  It is part of the sort.Interface implementation.
 func (s *valuesSorter) Less(i, j int) bool {
-	switch s.values[i].Kind() {
-	case reflect.Bool:
-		return !s.values[i].Bool() && s.values[j].Bool()
-	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		return s.values[i].Int() < s.values[j].Int()
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		return s.values[i].Uint() < s.values[j].Uint()
-	case reflect.Float32, reflect.Float64:
-		return s.values[i].Float() < s.values[j].Float()
-	case reflect.String:
-		return s.values[i].String() < s.values[j].String()
-	case reflect.Uintptr:
-		return s.values[i].Uint() < s.values[j].Uint()
-	}
-	return s.values[i].String() < s.values[j].String()
+	return valueSortLess(s.values[i], s.values[j])
 }
 
 // sortValues is a generic sort function for native types: int, uint, bool,
