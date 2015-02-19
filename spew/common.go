@@ -369,9 +369,8 @@ func valueSortLess(a, b reflect.Value) bool {
 		}
 
 		// Compare the contents of both arrays.
-		al := a.Len()
-		bl := b.Len()
-		for i := 0; i < al && i < bl; i++ {
+		l := a.Len()
+		for i := 0; i < l; i++ {
 			av := a.Index(i)
 			bv := b.Index(i)
 			if av.Interface() == bv.Interface() {
@@ -379,7 +378,7 @@ func valueSortLess(a, b reflect.Value) bool {
 			}
 			return valueSortLess(av, bv)
 		}
-		return al < bl
+		return false
 	}
 
 unsupported:
