@@ -368,7 +368,6 @@ func valueSortLess(a, b reflect.Value) bool {
 			}
 			return valueSortLess(av, bv)
 		}
-		return false
 	}
 	return a.String() < b.String()
 }
