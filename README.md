@@ -41,7 +41,7 @@ $ go get -u github.com/davecgh/go-spew/spew
 Add this import line to the file you're working in:
 
 ```Go
-import spew "github.com/davecgh/go-spew/spew"
+import "github.com/davecgh/go-spew/spew"
 ```
 
 To dump a variable with full newlines, indentation, type, and pointer
