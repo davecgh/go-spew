@@ -65,6 +65,33 @@ spew.Fprintf(someWriter, "myVar1: %v -- myVar2: %+v", myVar1, myVar2)
 spew.Fprintf(someWriter, "myVar3: %#v -- myVar4: %#+v", myVar3, myVar4)
 ```
 
+## Debugging a Web Application Example
+
+Here is an example of how you can use `spew.Sdump()` to help debug a web application. Please be sure to wrap your output using the `html.EscapeString()` function for safety reasons. You should also only use this debugging technique in a development environment, never in production.
+
+```Go
+package main
+
+import (
+    "fmt"
+    "html"
+    "net/http"
+
+    "github.com/davecgh/go-spew/spew"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "text/html")
+    fmt.Fprintf(w, "Hi there, %s!", r.URL.Path[1:])
+    fmt.Fprintf(w, "<!--\n" + html.EscapeString(spew.Sdump(w)) + "\n-->")
+}
+
+func main() {
+    http.HandleFunc("/", handler)
+    http.ListenAndServe(":8080", nil)
+}
+```
+
 ## Sample Dump Output
 
 ```
