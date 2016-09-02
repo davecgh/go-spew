@@ -15,7 +15,7 @@ open source or commercial projects.
 If you're interested in reading about how this package came to life and some
 of the challenges involved in providing a deep pretty printer, there is a blog
 post about it
-[here](https://blog.cyphertite.com/go-spew-a-journey-into-dumping-go-data-structures/).
+[here](https://web.archive.org/web/20160304013555/https://blog.cyphertite.com/go-spew-a-journey-into-dumping-go-data-structures/).
 
 ## Documentation
 
