@@ -15,7 +15,7 @@
 // NOTE: Due to the following build constraints, this file will only be compiled
 // when the code is not running on Google App Engine and "-tags disableunsafe"
 // is not added to the go build command line.
-// +build !appengine,!disableunsafe
+// +build !appengine,!disableunsafe,!js
 
 /*
 This test file is part of the spew package rather than than the spew_test
