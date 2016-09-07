@@ -157,7 +157,7 @@ options. See the ConfigState documentation for more details.
 	which only accept pointer receivers from non-pointer variables.  This option
 	relies on access to the unsafe package, so it will not have any effect when
 	running in environments without access to the unsafe package such as Google
-	App Engine or with the "disableunsafe" build tag specified.
+	App Engine or with the "safe" build tag specified.
 	Pointer method invocation is enabled by default.
 
 * ContinueOnMethod
@@ -185,9 +185,9 @@ options. See the ConfigState documentation for more details.
 This package relies on the unsafe package to perform some of the more advanced
 features, however it also supports a "limited" mode which allows it to work in
 environments where the unsafe package is not available.  By default, it will
-operate in this mode on Google App Engine.  The "disableunsafe" build tag may
-also be specified to force the package to build without using the unsafe
-package.
+operate in this mode on Google App Engine and when compiled with GopherJS.  The
+"safe" build tag may also be specified to force the package to build without
+using the unsafe package.
 
 ## License
 
