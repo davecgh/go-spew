@@ -13,9 +13,9 @@
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 // NOTE: Due to the following build constraints, this file will only be compiled
-// when either the code is running on Google App Engine or "-tags disableunsafe"
-// is added to the go build command line.
-// +build appengine disableunsafe
+// when the code is running on Google App Engine, compiled by GopherJS, or
+// "-tags disableunsafe" is added to the go build command line.
+// +build appengine disableunsafe js
 
 package spew
 
