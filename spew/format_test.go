@@ -75,7 +75,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-// formatterTest is used to describe a test to be perfomed against NewFormatter.
+// formatterTest is used to describe a test to be performed against NewFormatter.
 type formatterTest struct {
 	format string
 	in     interface{}

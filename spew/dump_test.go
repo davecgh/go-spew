@@ -70,7 +70,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
-// dumpTest is used to describe a test to be perfomed against the Dump method.
+// dumpTest is used to describe a test to be performed against the Dump method.
 type dumpTest struct {
 	in    interface{}
 	wants []string
