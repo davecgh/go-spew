@@ -1,10 +1,14 @@
 go-spew
 =======
 
-[![Build Status](https://travis-ci.org/davecgh/go-spew.png?branch=master)]
-(https://travis-ci.org/davecgh/go-spew) [![Coverage Status]
-(https://coveralls.io/repos/davecgh/go-spew/badge.png?branch=master)]
-(https://coveralls.io/r/davecgh/go-spew?branch=master)
+[![Build Status](https://img.shields.io/travis/davecgh/go-spew.svg)]
+(https://travis-ci.org/davecgh/go-spew) [![ISC License]
+(http://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org) [![Coverage Status]
+(https://img.shields.io/coveralls/davecgh/go-spew.svg)]
+(https://coveralls.io/r/davecgh/go-spew?branch=master) [![GoDoc]
+(https://img.shields.io/badge/godoc-reference-blue.svg)]
+(http://godoc.org/github.com/davecgh/go-spew/spew)
+
 
 Go-spew implements a deep pretty printer for Go data structures to aid in
 debugging.  A comprehensive suite of tests with 100% test coverage is provided
@@ -19,7 +23,7 @@ post about it
 
 ## Documentation
 
-[![GoDoc](https://godoc.org/github.com/davecgh/go-spew/spew?status.png)]
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)]
 (http://godoc.org/github.com/davecgh/go-spew/spew)
 
 Full `go doc` style documentation for the project can be viewed online without
@@ -200,4 +204,4 @@ using the unsafe package.
 
 ## License
 
-Go-spew is licensed under the liberal ISC License.
+Go-spew is licensed under the [copyfree](http://copyfree.org) ISC License.
