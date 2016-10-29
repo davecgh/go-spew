@@ -5,9 +5,7 @@ go-spew
 (https://travis-ci.org/davecgh/go-spew) [![ISC License]
 (http://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org) [![Coverage Status]
 (https://img.shields.io/coveralls/davecgh/go-spew.svg)]
-(https://coveralls.io/r/davecgh/go-spew?branch=master) [![GoDoc]
-(https://img.shields.io/badge/godoc-reference-blue.svg)]
-(http://godoc.org/github.com/davecgh/go-spew/spew)
+(https://coveralls.io/r/davecgh/go-spew?branch=master)
 
 
 Go-spew implements a deep pretty printer for Go data structures to aid in
