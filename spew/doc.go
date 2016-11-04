@@ -100,6 +100,13 @@ The following configuration options are available:
 		capacities for arrays, slices, maps and channels. This is useful when
 		diffing data structures in tests.
 
+	* DisableTypes
+		DisableTypes specifies whether to disable the printing of types.
+
+	* DisableLengths
+		DisableLengths specifies whether to disable the printing of lengths.
+		This also disables the printing of capacities.
+
 	* ContinueOnMethod
 		Enables recursion into types after invoking error and Stringer interface
 		methods. Recursion after method invocation is disabled by default.
