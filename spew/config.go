@@ -76,6 +76,11 @@ type ConfigState struct {
 	// data structures in tests.
 	DisableCapacities bool
 
+	// AlwaysIncludeTrailingComma specifies whether to always include a trailing
+	// comma, Go-style. This is useful to avoid false positives when diffing data
+	// structures in tests.
+	AlwaysIncludeTrailingComma bool
+
 	// ContinueOnMethod specifies whether or not recursion should continue once
 	// a custom error or Stringer interface is invoked.  The default, false,
 	// means it will print the results of invoking the custom error or Stringer
