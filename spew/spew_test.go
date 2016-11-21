@@ -133,6 +133,7 @@ func initSpewTests() {
 	scsNoPtrAddr := &spew.ConfigState{DisablePointerAddresses: true}
 	scsNoCap := &spew.ConfigState{DisableCapacities: true}
 	scsTrailingComma := &spew.ConfigState{Indent: " ", AlwaysIncludeTrailingComma: true}
+	scsNoNils := &spew.ConfigState{Indent: " ", DisableNilValues: true}
 
 	// Variables for tests on types which implement Stringer interface with and
 	// without a pointer receiver.
@@ -143,6 +144,17 @@ func initSpewTests() {
 		s *struct{}
 	}
 	tptr := &ptrTester{s: &struct{}{}}
+
+	type testIntf interface {
+		TestyTesty()
+	}
+
+	type nilTester struct {
+		s     *struct{}
+		slice []interface{}
+		m     map[string]interface{}
+		intf  testIntf
+	}
 
 	// depthTester is used to test max depth handling for structs, array, slices
 	// and maps.
@@ -225,6 +237,15 @@ func initSpewTests() {
 				" m: (map[string]int) (len=1) {\n" +
 				"  (string) (len=3) \"one\": (int) 1,\n" +
 				" },\n" +
+				"}\n"},
+		{scsNoNils, fCSSdump, "", nilTester{}, "(spew_test.nilTester) {\n}\n"},
+		{scsNoNils, fCSSdump, "", nilTester{
+			slice: []interface{}{nil, "foo"},
+		},
+			"(spew_test.nilTester) {\n" +
+				" slice: ([]interface {}) (len=2 cap=2) {\n" +
+				"  (string) (len=3) \"foo\"\n" +
+				" }\n" +
 				"}\n"},
 	}
 }

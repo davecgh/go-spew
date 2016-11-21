@@ -67,6 +67,12 @@ type ConfigState struct {
 	// Google App Engine or with the "safe" build tag specified.
 	DisablePointerMethods bool
 
+	// DisableNilValues specifies whether or not to include nil fields. This is
+	// useful in tests that rely on "golden" test data: Often one adds a new,
+	// optional field to a struct, and it's onerous to update all test data
+	// to reflect this field, which would now be nil everywhere.
+	DisableNilValues bool
+
 	// DisablePointerAddresses specifies whether to disable the printing of
 	// pointer addresses. This is useful when diffing data structures in tests.
 	DisablePointerAddresses bool
