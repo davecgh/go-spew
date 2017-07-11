@@ -1,11 +1,9 @@
 go-spew
 =======
 
-[![Build Status](https://img.shields.io/travis/davecgh/go-spew.svg)]
-(https://travis-ci.org/davecgh/go-spew) [![ISC License]
-(http://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org) [![Coverage Status]
-(https://img.shields.io/coveralls/davecgh/go-spew.svg)]
-(https://coveralls.io/r/davecgh/go-spew?branch=master)
+[![Build Status](https://img.shields.io/travis/davecgh/go-spew.svg)](https://travis-ci.org/davecgh/go-spew)
+[![ISC License](http://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org)
+[![Coverage Status](https://img.shields.io/coveralls/davecgh/go-spew.svg)](https://coveralls.io/r/davecgh/go-spew?branch=master)
 
 
 Go-spew implements a deep pretty printer for Go data structures to aid in
@@ -21,8 +19,7 @@ post about it
 
 ## Documentation
 
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)]
-(http://godoc.org/github.com/davecgh/go-spew/spew)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/davecgh/go-spew/spew)
 
 Full `go doc` style documentation for the project can be viewed online without
 installing this package by using the excellent GoDoc site here:
@@ -58,7 +55,7 @@ str := spew.Sdump(myVar1, myVar2, ...)
 Alternatively, if you would prefer to use format strings with a compacted inline
 printing style, use the convenience wrappers Printf, Fprintf, etc with %v (most
 compact), %+v (adds pointer addresses), %#v (adds types), or %#+v (adds types
-and pointer addresses): 
+and pointer addresses):
 
 ```Go
 spew.Printf("myVar1: %v -- myVar2: %+v", myVar1, myVar2)
@@ -199,7 +196,3 @@ environments where the unsafe package is not available.  By default, it will
 operate in this mode on Google App Engine and when compiled with GopherJS.  The
 "safe" build tag may also be specified to force the package to build without
 using the unsafe package.
-
-## License
-
-Go-spew is licensed under the [copyfree](http://copyfree.org) ISC License.
