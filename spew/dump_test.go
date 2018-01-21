@@ -1072,13 +1072,14 @@ func TestDumpOmitEmpty(t *testing.T) {
 	}
 	s1 := s{S1: &s{S2: &s{Int: 5}}}
 	actual := cfg.Sdump(s1)
-	expected := "(spew_test.s) {\n" +
-		"S1: (*spew_test.s)({\n" +
-		"S2: (*spew_test.s)({\n" +
-		"Int: (int) 5,\n" +
-		"}),\n" +
-		"}),\n" +
-		"}\n"
+	expected := `(spew_test.s) {
+S1: (*spew_test.s)({
+S2: (*spew_test.s)({
+Int: (int) 5,
+}),
+}),
+}
+`
 	if actual != expected {
 		t.Errorf("Omit empty fields incorrect:\n  %v %v", actual, expected)
 	}
