@@ -1040,3 +1040,46 @@ func TestDumpSortedKeys(t *testing.T) {
 	}
 
 }
+
+func TestDumpOmitEmpty(t *testing.T) {
+	cfg := spew.ConfigState{OmitEmpty: true, DisablePointerAddresses: true}
+	type s struct {
+		S1         *s
+		S2         *s
+		Int        int
+		Int8       int8
+		Int16      int16
+		Int32      int32
+		Int64      int64
+		Uint       uint32
+		Uint8      uint8
+		Uint16     uint16
+		Uint32     uint32
+		Uint64     uint64
+		Uintptr    uintptr
+		Float32    float32
+		Float64    float64
+		Complex64  complex64
+		Complex128 complex128
+		UnsafePtr  unsafe.Pointer
+		Interface  interface{}
+		Bool       bool
+		Chan       chan string
+		String     string
+		Map        map[string]int
+		Slice      []string
+		Array      [0]string
+	}
+	s1 := s{S1: &s{S2: &s{Int: 5}}}
+	actual := cfg.Sdump(s1)
+	expected := "(spew_test.s) {\n" +
+		"S1: (*spew_test.s)({\n" +
+		"S2: (*spew_test.s)({\n" +
+		"Int: (int) 5,\n" +
+		"}),\n" +
+		"}),\n" +
+		"}\n"
+	if actual != expected {
+		t.Errorf("Omit empty fields incorrect:\n  %v %v", actual, expected)
+	}
+}
