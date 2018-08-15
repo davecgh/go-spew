@@ -82,3 +82,13 @@ func TestInvalidReflectValue(t *testing.T) {
 func SortValues(values []reflect.Value, cs *ConfigState) {
 	sortValues(values, cs)
 }
+
+func TestIsZero(t *testing.T) {
+	if !isZero(reflect.ValueOf(0)) {
+		t.Errorf("isZero should be true for 0")
+	}
+	var v reflect.Value
+	if isZero(v) {
+		t.Errorf("isZero should be false for an invalid Value")
+	}
+}
