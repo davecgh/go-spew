@@ -413,12 +413,16 @@ func (d *dumpState) dump(v reflect.Value) {
 			vt := v.Type()
 			numFields := v.NumField()
 			for i := 0; i < numFields; i++ {
+				vf := v.Field(i)
+				if d.cs.OmitEmpty && isZero(vf) {
+					continue
+				}
 				d.indent()
 				vtf := vt.Field(i)
 				d.w.Write([]byte(vtf.Name))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextIndent = true
-				d.dump(d.unpackValue(v.Field(i)))
+				d.dump(d.unpackValue(vf))
 				if i < (numFields - 1) {
 					d.w.Write(commaNewlineBytes)
 				} else {
@@ -506,4 +510,27 @@ get the formatted result as a string.
 */
 func Dump(a ...interface{}) {
 	fdump(&Config, os.Stdout, a...)
+}
+
+// isZero is a helper function that checks whether a reflect.Value has the zero value for its type.
+func isZero(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr, reflect.Chan:
+		return v.IsNil()
+	case reflect.UnsafePointer:
+		return v.Pointer() == 0
+	case reflect.Complex64, reflect.Complex128:
+		return v.Complex() == 0
+	}
+	return false
 }

@@ -98,6 +98,10 @@ type ConfigState struct {
 	// be spewed to strings and sorted by those strings.  This is only
 	// considered if SortKeys is true.
 	SpewKeys bool
+
+	// OmitEmpty specifies that empty struct fields should be omitted.
+	// Empty fields are any that have the zero value for their type.
+	OmitEmpty bool
 }
 
 // Config is the active configuration of the top-level functions.
@@ -301,6 +305,7 @@ func (c *ConfigState) convertArgs(args []interface{}) (formatters []interface{})
 // 	DisablePointerMethods: false
 // 	ContinueOnMethod: false
 // 	SortKeys: false
+// 	OmitEmpty: false
 func NewDefaultConfig() *ConfigState {
 	return &ConfigState{Indent: " "}
 }
