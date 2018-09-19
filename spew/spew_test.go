@@ -132,6 +132,8 @@ func initSpewTests() {
 	scsContinue := &spew.ConfigState{Indent: " ", ContinueOnMethod: true}
 	scsNoPtrAddr := &spew.ConfigState{DisablePointerAddresses: true}
 	scsNoCap := &spew.ConfigState{DisableCapacities: true}
+	scsTrailingComma := &spew.ConfigState{Indent: " ", AlwaysIncludeTrailingComma: true}
+	scsNoNils := &spew.ConfigState{Indent: " ", DisableNilValues: true}
 
 	// Variables for tests on types which implement Stringer interface with and
 	// without a pointer receiver.
@@ -143,6 +145,17 @@ func initSpewTests() {
 	}
 	tptr := &ptrTester{s: &struct{}{}}
 
+	type testIntf interface {
+		TestyTesty()
+	}
+
+	type nilTester struct {
+		s     *struct{}
+		slice []interface{}
+		m     map[string]interface{}
+		intf  testIntf
+	}
+
 	// depthTester is used to test max depth handling for structs, array, slices
 	// and maps.
 	type depthTester struct {
@@ -153,6 +166,12 @@ func initSpewTests() {
 	}
 	dt := depthTester{indirCir1{nil}, [1]string{"arr"}, []string{"slice"},
 		map[string]int{"one": 1}}
+
+	// commatester is to test trailing commas
+	type commaTester struct {
+		slice []interface{}
+		m     map[string]int
+	}
 
 	// Variable for tests on types which implement error interface.
 	te := customError(10)
@@ -203,6 +222,31 @@ func initSpewTests() {
 		{scsNoPtrAddr, fCSSdump, "", tptr, "(*spew_test.ptrTester)({\ns: (*struct {})({\n})\n})\n"},
 		{scsNoCap, fCSSdump, "", make([]string, 0, 10), "([]string) {\n}\n"},
 		{scsNoCap, fCSSdump, "", make([]string, 1, 10), "([]string) (len=1) {\n(string) \"\"\n}\n"},
+		{scsTrailingComma, fCSFdump, "", commaTester{
+			slice: []interface{}{
+				map[string]int{"one": 1},
+			},
+			m: map[string]int{"one": 1},
+		},
+			"(spew_test.commaTester) {\n" +
+				" slice: ([]interface {}) (len=1 cap=1) {\n" +
+				"  (map[string]int) (len=1) {\n" +
+				"   (string) (len=3) \"one\": (int) 1,\n" +
+				"  },\n" +
+				" },\n" +
+				" m: (map[string]int) (len=1) {\n" +
+				"  (string) (len=3) \"one\": (int) 1,\n" +
+				" },\n" +
+				"}\n"},
+		{scsNoNils, fCSSdump, "", nilTester{}, "(spew_test.nilTester) {\n}\n"},
+		{scsNoNils, fCSSdump, "", nilTester{
+			slice: []interface{}{nil, "foo"},
+		},
+			"(spew_test.nilTester) {\n" +
+				" slice: ([]interface {}) (len=2 cap=2) {\n" +
+				"  (string) (len=3) \"foo\"\n" +
+				" }\n" +
+				"}\n"},
 	}
 }
 

@@ -234,14 +234,16 @@ func (d *dumpState) dumpSlice(v reflect.Value) {
 	}
 
 	// Recursively call dump for each item.
+	l := list{dumpState: d}
 	for i := 0; i < numEntries; i++ {
-		d.dump(d.unpackValue(v.Index(i)))
-		if i < (numEntries - 1) {
-			d.w.Write(commaNewlineBytes)
-		} else {
-			d.w.Write(newlineBytes)
+		entryVal := d.unpackValue(v.Index(i))
+		if !d.filterValue(entryVal) {
+			continue
 		}
+		l.beginEntry()
+		d.dump(entryVal)
 	}
+	l.end()
 }
 
 // dump is the main workhorse for dumping a value.  It uses the passed reflect
@@ -382,22 +384,23 @@ func (d *dumpState) dump(v reflect.Value) {
 			d.indent()
 			d.w.Write(maxNewlineBytes)
 		} else {
-			numEntries := v.Len()
 			keys := v.MapKeys()
 			if d.cs.SortKeys {
 				sortValues(keys, d.cs)
 			}
-			for i, key := range keys {
+			l := list{dumpState: d}
+			for _, key := range keys {
+				mapValue := d.unpackValue(v.MapIndex(key))
+				if !d.filterValue(mapValue) {
+					continue
+				}
+				l.beginEntry()
 				d.dump(d.unpackValue(key))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextIndent = true
-				d.dump(d.unpackValue(v.MapIndex(key)))
-				if i < (numEntries - 1) {
-					d.w.Write(commaNewlineBytes)
-				} else {
-					d.w.Write(newlineBytes)
-				}
+				d.dump(mapValue)
 			}
+			l.end()
 		}
 		d.depth--
 		d.indent()
@@ -412,19 +415,20 @@ func (d *dumpState) dump(v reflect.Value) {
 		} else {
 			vt := v.Type()
 			numFields := v.NumField()
+			l := list{dumpState: d, indented: true}
 			for i := 0; i < numFields; i++ {
-				d.indent()
+				fieldValue := d.unpackValue(v.Field(i))
+				if !d.filterValue(fieldValue) {
+					continue
+				}
+				l.beginEntry()
 				vtf := vt.Field(i)
 				d.w.Write([]byte(vtf.Name))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextIndent = true
-				d.dump(d.unpackValue(v.Field(i)))
-				if i < (numFields - 1) {
-					d.w.Write(commaNewlineBytes)
-				} else {
-					d.w.Write(newlineBytes)
-				}
+				d.dump(fieldValue)
 			}
+			l.end()
 		}
 		d.depth--
 		d.indent()
@@ -448,15 +452,67 @@ func (d *dumpState) dump(v reflect.Value) {
 	}
 }
 
+// writeDelimiter emits a comma if hasMoreElements is true, or if trailing
+// commas are always enabled.
+func (d *dumpState) writeDelimiter(hasMoreElements bool) {
+	if hasMoreElements || d.cs.AlwaysIncludeTrailingComma {
+		d.w.Write(commaNewlineBytes)
+	} else {
+		d.w.Write(newlineBytes)
+	}
+}
+
+// filterValue returns true if a value should be dumped.
+func (d *dumpState) filterValue(value reflect.Value) bool {
+	if !d.cs.DisableNilValues {
+		return true
+	}
+	return !isNil(value)
+}
+
+// list is a small helper to write lists and ensure that each item is
+// correctly delimited, and that nothing is emitted if no entires were added.
+type list struct {
+	count    int
+	indented bool
+	*dumpState
+}
+
+func (l *list) beginEntry() {
+	if l.count > 0 {
+		l.writeDelimiter(true)
+	}
+	l.count++
+	if l.indented {
+		l.indent()
+	}
+}
+
+func (l *list) end() {
+	if l.count > 0 {
+		l.writeDelimiter(false)
+	}
+}
+
+func isNil(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Interface, reflect.Map, reflect.Slice, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
+}
+
 // fdump is a helper function to consolidate the logic from the various public
 // methods which take varying writers and config states.
 func fdump(cs *ConfigState, w io.Writer, a ...interface{}) {
 	for _, arg := range a {
 		if arg == nil {
-			w.Write(interfaceBytes)
-			w.Write(spaceBytes)
-			w.Write(nilAngleBytes)
-			w.Write(newlineBytes)
+			if !cs.DisableNilValues {
+				w.Write(interfaceBytes)
+				w.Write(spaceBytes)
+				w.Write(nilAngleBytes)
+				w.Write(newlineBytes)
+			}
 			continue
 		}
 

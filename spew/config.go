@@ -67,6 +67,12 @@ type ConfigState struct {
 	// Google App Engine or with the "safe" build tag specified.
 	DisablePointerMethods bool
 
+	// DisableNilValues specifies whether or not to include nil fields. This is
+	// useful in tests that rely on "golden" test data: Often one adds a new,
+	// optional field to a struct, and it's onerous to update all test data
+	// to reflect this field, which would now be nil everywhere.
+	DisableNilValues bool
+
 	// DisablePointerAddresses specifies whether to disable the printing of
 	// pointer addresses. This is useful when diffing data structures in tests.
 	DisablePointerAddresses bool
@@ -75,6 +81,11 @@ type ConfigState struct {
 	// for arrays, slices, maps and channels. This is useful when diffing
 	// data structures in tests.
 	DisableCapacities bool
+
+	// AlwaysIncludeTrailingComma specifies whether to always include a trailing
+	// comma, Go-style. This is useful to avoid false positives when diffing data
+	// structures in tests.
+	AlwaysIncludeTrailingComma bool
 
 	// ContinueOnMethod specifies whether or not recursion should continue once
 	// a custom error or Stringer interface is invoked.  The default, false,
