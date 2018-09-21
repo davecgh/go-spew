@@ -169,7 +169,7 @@ func (f *formatState) formatPtr(v reflect.Value) {
 	}
 
 	// Display pointer information depending on flags.
-	if f.fs.Flag('+') && (len(pointerChain) > 0) {
+	if f.fs.Flag('+') && !f.cs.DisablePointerAddresses && (len(pointerChain) > 0) {
 		f.fs.Write(openParenBytes)
 		for i, addr := range pointerChain {
 			if i > 0 {
