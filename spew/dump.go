@@ -415,6 +415,11 @@ func (d *dumpState) dump(v reflect.Value) {
 			for i := 0; i < numFields; i++ {
 				d.indent()
 				vtf := vt.Field(i)
+				spewTag := vtf.Tag.Get("spew")
+				switch spewTag {
+				case "-":
+					continue
+				}
 				d.w.Write([]byte(vtf.Name))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextIndent = true
