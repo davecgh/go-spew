@@ -309,6 +309,26 @@ func (d *dumpState) dump(v reflect.Value) {
 		}
 	}
 
+	highlightIsOn := false
+	if d.cs.HighlightValues {
+		switch kind {
+		case reflect.String:
+			highlightIsOn = true
+			d.w.Write(highlight1StartBytes)
+		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int,
+			reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint,
+			reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128:
+			highlightIsOn = true
+			d.w.Write(highlight2StartBytes)
+		case reflect.Bool:
+			highlightIsOn = true
+			d.w.Write(highlight3StartBytes)
+		case reflect.Uintptr:
+			highlightIsOn = true
+			d.w.Write(highlight4StartBytes)
+		}
+	}
+
 	switch kind {
 	case reflect.Invalid:
 		// Do nothing.  We should never get here since invalid has already
@@ -445,6 +465,10 @@ func (d *dumpState) dump(v reflect.Value) {
 		} else {
 			fmt.Fprintf(d.w, "%v", v.String())
 		}
+	}
+
+	if highlightIsOn {
+		d.w.Write(highlightEndBytes)
 	}
 }
 

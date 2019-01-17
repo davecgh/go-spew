@@ -1040,3 +1040,43 @@ func TestDumpSortedKeys(t *testing.T) {
 	}
 
 }
+
+func TestDumpHighlightValues(t *testing.T) {
+	cfg := spew.ConfigState{HighlightValues: true}
+	colBytes := map[string]string{
+		"reset": "\x1b[0m",
+		"str":   "\x1b[32m",
+		"num":   "\x1b[33m",
+		"bool":  "\x1b[34m",
+		"other": "\x1b[36m",
+	}
+	s := cfg.Sdump(map[int]string{1: "1", 3: "3", 2: "2"})
+	expected := "(map[int]string) (len=3) {\n" +
+		"(int) " + colBytes["num"] + "1" + colBytes["reset"] + ": (string) (len=1) " + colBytes["str"] + "\"1\"" + colBytes["reset"] + ",\n" +
+		"(int) " + colBytes["num"] + "3" + colBytes["reset"] + ": (string) (len=1) " + colBytes["str"] + "\"3\"" + colBytes["reset"] + ",\n" +
+		"(int) " + colBytes["num"] + "2" + colBytes["reset"] + ": (string) (len=1) " + colBytes["str"] + "\"2\"" + colBytes["reset"] + "\n" +
+		"}\n"
+	if s != expected {
+		t.Errorf("Highlighted string mismatch:\n  %v %v", s, expected)
+	}
+
+	s = cfg.Sdump(map[stringer]int{"1": 1, "3": 3, "2": 2})
+	expected = "(map[spew_test.stringer]int) (len=3) {\n" +
+		"(spew_test.stringer) (len=1) stringer 1: (int) " + colBytes["num"] + "1" + colBytes["reset"] + ",\n" +
+		"(spew_test.stringer) (len=1) stringer 3: (int) " + colBytes["num"] + "3" + colBytes["reset"] + ",\n" +
+		"(spew_test.stringer) (len=1) stringer 2: (int) " + colBytes["num"] + "2" + colBytes["reset"] + "\n" +
+		"}\n"
+	if s != expected {
+		t.Errorf("Highlighted ints mismatch:\n  %v %v", s, expected)
+	}
+
+	s = cfg.Sdump(map[string]bool{"custom1": true, "custom2": false})
+	expected = "(map[string]bool) (len=2) {\n" +
+		"(string) (len=7) " + colBytes["str"] + `"custom1"` + colBytes["reset"] + ": (bool) " + colBytes["bool"] + "true" + colBytes["reset"] + ",\n" +
+		"(string) (len=7) " + colBytes["str"] + `"custom2"` + colBytes["reset"] + ": (bool) " + colBytes["bool"] + "false" + colBytes["reset"] + "\n" +
+		"}\n"
+	if s != expected {
+		t.Errorf("Highlighted keys mismatch:\n  %v %v", s, expected)
+	}
+
+}

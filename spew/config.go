@@ -98,6 +98,10 @@ type ConfigState struct {
 	// be spewed to strings and sorted by those strings.  This is only
 	// considered if SortKeys is true.
 	SpewKeys bool
+
+	// HighlightValues adds colour/color to scalar values in output.
+	// The colours are suitable for ANSI displays.
+	HighlightValues bool
 }
 
 // Config is the active configuration of the top-level functions.

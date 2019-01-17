@@ -118,6 +118,10 @@ The following configuration options are available:
 		spewed to strings and sorted by those strings.  This is only
 		considered if SortKeys is true.
 
+	* HighlightValues
+		When true, values in dumps are highlighted using colours/colors
+		suitable for ANSI-compatible displays.
+
 Dump Usage
 
 Simply call spew.Dump with a list of variables you want to dump:
