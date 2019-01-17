@@ -62,6 +62,11 @@ var (
 	closeMapBytes         = []byte("]")
 	lenEqualsBytes        = []byte("len=")
 	capEqualsBytes        = []byte("cap=")
+	highlight1StartBytes  = []byte("\x1b[32m")
+	highlight2StartBytes  = []byte("\x1b[33m")
+	highlight3StartBytes  = []byte("\x1b[34m")
+	highlight4StartBytes  = []byte("\x1b[36m")
+	highlightEndBytes     = []byte("\x1b[0m")
 )
 
 // hexDigits is used to map a decimal value to a hex digit.
