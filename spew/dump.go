@@ -323,7 +323,7 @@ func (d *dumpState) dump(v reflect.Value) {
 		case reflect.Bool:
 			highlightIsOn = true
 			d.w.Write(highlight3StartBytes)
-		case reflect.Uintptr:
+		case reflect.Uintptr, reflect.UnsafePointer, reflect.Chan, reflect.Func:
 			highlightIsOn = true
 			d.w.Write(highlight4StartBytes)
 		}

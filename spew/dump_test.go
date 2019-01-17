@@ -64,6 +64,7 @@ package spew_test
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"testing"
 	"unsafe"
 
@@ -1042,8 +1043,8 @@ func TestDumpSortedKeys(t *testing.T) {
 }
 
 func TestDumpHighlightValues(t *testing.T) {
-	cfg := spew.ConfigState{HighlightValues: true}
-	colBytes := map[string]string{
+	cfg := spew.ConfigState{SortKeys: true, HighlightValues: true}
+	col := map[string]string{
 		"reset": "\x1b[0m",
 		"str":   "\x1b[32m",
 		"num":   "\x1b[33m",
@@ -1052,9 +1053,9 @@ func TestDumpHighlightValues(t *testing.T) {
 	}
 	s := cfg.Sdump(map[int]string{1: "1", 3: "3", 2: "2"})
 	expected := "(map[int]string) (len=3) {\n" +
-		"(int) " + colBytes["num"] + "1" + colBytes["reset"] + ": (string) (len=1) " + colBytes["str"] + "\"1\"" + colBytes["reset"] + ",\n" +
-		"(int) " + colBytes["num"] + "3" + colBytes["reset"] + ": (string) (len=1) " + colBytes["str"] + "\"3\"" + colBytes["reset"] + ",\n" +
-		"(int) " + colBytes["num"] + "2" + colBytes["reset"] + ": (string) (len=1) " + colBytes["str"] + "\"2\"" + colBytes["reset"] + "\n" +
+		"(int) " + col["num"] + "1" + col["reset"] + ": (string) (len=1) " + col["str"] + "\"1\"" + col["reset"] + ",\n" +
+		"(int) " + col["num"] + "2" + col["reset"] + ": (string) (len=1) " + col["str"] + "\"2\"" + col["reset"] + ",\n" +
+		"(int) " + col["num"] + "3" + col["reset"] + ": (string) (len=1) " + col["str"] + "\"3\"" + col["reset"] + "\n" +
 		"}\n"
 	if s != expected {
 		t.Errorf("Highlighted string mismatch:\n  %v %v", s, expected)
@@ -1062,9 +1063,9 @@ func TestDumpHighlightValues(t *testing.T) {
 
 	s = cfg.Sdump(map[stringer]int{"1": 1, "3": 3, "2": 2})
 	expected = "(map[spew_test.stringer]int) (len=3) {\n" +
-		"(spew_test.stringer) (len=1) stringer 1: (int) " + colBytes["num"] + "1" + colBytes["reset"] + ",\n" +
-		"(spew_test.stringer) (len=1) stringer 3: (int) " + colBytes["num"] + "3" + colBytes["reset"] + ",\n" +
-		"(spew_test.stringer) (len=1) stringer 2: (int) " + colBytes["num"] + "2" + colBytes["reset"] + "\n" +
+		"(spew_test.stringer) (len=1) stringer 1: (int) " + col["num"] + "1" + col["reset"] + ",\n" +
+		"(spew_test.stringer) (len=1) stringer 2: (int) " + col["num"] + "2" + col["reset"] + ",\n" +
+		"(spew_test.stringer) (len=1) stringer 3: (int) " + col["num"] + "3" + col["reset"] + "\n" +
 		"}\n"
 	if s != expected {
 		t.Errorf("Highlighted ints mismatch:\n  %v %v", s, expected)
@@ -1072,11 +1073,26 @@ func TestDumpHighlightValues(t *testing.T) {
 
 	s = cfg.Sdump(map[string]bool{"custom1": true, "custom2": false})
 	expected = "(map[string]bool) (len=2) {\n" +
-		"(string) (len=7) " + colBytes["str"] + `"custom1"` + colBytes["reset"] + ": (bool) " + colBytes["bool"] + "true" + colBytes["reset"] + ",\n" +
-		"(string) (len=7) " + colBytes["str"] + `"custom2"` + colBytes["reset"] + ": (bool) " + colBytes["bool"] + "false" + colBytes["reset"] + "\n" +
+		"(string) (len=7) " + col["str"] + `"custom1"` + col["reset"] + ": (bool) " + col["bool"] + "true" + col["reset"] + ",\n" +
+		"(string) (len=7) " + col["str"] + `"custom2"` + col["reset"] + ": (bool) " + col["bool"] + "false" + col["reset"] + "\n" +
 		"}\n"
 	if s != expected {
 		t.Errorf("Highlighted keys mismatch:\n  %v %v", s, expected)
+	}
+
+	s = cfg.Sdump(map[string]chan int{"chanInt1": make(chan int), "chanInt2": make(chan int)})
+	dummyPtr := "0x123456789a"
+	expected = "(map[string]chan int) (len=2) {\n" +
+		"(string) (len=8) " + col["str"] + `"chanInt1"` + col["reset"] + ": (chan int) " + col["other"] + dummyPtr + col["reset"] + ",\n" +
+		"(string) (len=8) " + col["str"] + `"chanInt2"` + col["reset"] + ": (chan int) " + col["other"] + dummyPtr + col["reset"] + "\n" +
+		"}\n"
+
+	// replace all pointers with dummyPtr (they will be prefixed by 'm' - from col[], so cannot \b at start) to match expected
+	re := regexp.MustCompile(`0x[0-9a-f]{10}\b`)
+	s = re.ReplaceAllString(s, dummyPtr)
+
+	if s != expected {
+		t.Errorf("Highlighted other mismatch:\n  %v %v", s, expected)
 	}
 
 }
