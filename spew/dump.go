@@ -415,11 +415,24 @@ func (d *dumpState) dump(v reflect.Value) {
 			for i := 0; i < numFields; i++ {
 				d.indent()
 				vtf := vt.Field(i)
+				tag := vtf.Tag.Get("spew")
+				if tag == "-" {
+					continue
+				}
 				d.w.Write([]byte(vtf.Name))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextIndent = true
 				d.dump(d.unpackValue(v.Field(i)))
-				if i < (numFields - 1) {
+
+				hasAnotherFieldToWrite := false
+				for j := i + 1; j < numFields; j++ {
+					vtf = vt.Field(j)
+					tag = vtf.Tag.Get("spew")
+					if tag != "-" {
+						hasAnotherFieldToWrite = true
+					}
+				}
+				if i < (numFields-1) && hasAnotherFieldToWrite {
 					d.w.Write(commaNewlineBytes)
 				} else {
 					d.w.Write(newlineBytes)

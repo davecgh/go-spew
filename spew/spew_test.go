@@ -154,6 +154,13 @@ func initSpewTests() {
 	dt := depthTester{indirCir1{nil}, [1]string{"arr"}, []string{"slice"},
 		map[string]int{"one": 1}}
 
+	type ignoreTester struct {
+		visible   bool
+		invisible bool `spew:"-"`
+	}
+
+	it := ignoreTester{true, false}
+
 	// Variable for tests on types which implement error interface.
 	te := customError(10)
 
@@ -179,6 +186,8 @@ func initSpewTests() {
 		{scsDefault, fSprint, "", complex(-1, -2), "(-1-2i)"},
 		{scsDefault, fSprintf, "%v", complex(float32(-3), -4), "(-3-4i)"},
 		{scsDefault, fSprintln, "", complex(float64(-5), -6), "(-5-6i)\n"},
+		{scsDefault, fCSFdump, "", it, "(spew_test.ignoreTester) {\n" +
+			" visible: (bool) true\n }\n"},
 		{scsNoMethods, fCSFprint, "", ts, "test"},
 		{scsNoMethods, fCSFprint, "", &ts, "<*>test"},
 		{scsNoMethods, fCSFprint, "", tps, "test"},
