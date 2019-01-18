@@ -275,28 +275,30 @@ func (d *dumpState) dump(v reflect.Value) {
 
 	// Display length and capacity if the built-in len and cap functions
 	// work with the value's kind and the len/cap itself is non-zero.
-	valueLen, valueCap := 0, 0
-	switch v.Kind() {
-	case reflect.Array, reflect.Slice, reflect.Chan:
-		valueLen, valueCap = v.Len(), v.Cap()
-	case reflect.Map, reflect.String:
-		valueLen = v.Len()
-	}
-	if valueLen != 0 || !d.cs.DisableCapacities && valueCap != 0 {
-		d.w.Write(openParenBytes)
-		if valueLen != 0 {
-			d.w.Write(lenEqualsBytes)
-			printInt(d.w, int64(valueLen), 10)
+	if !d.cs.DisableLengths {
+		valueLen, valueCap := 0, 0
+		switch v.Kind() {
+		case reflect.Array, reflect.Slice, reflect.Chan:
+			valueLen, valueCap = v.Len(), v.Cap()
+		case reflect.Map, reflect.String:
+			valueLen = v.Len()
 		}
-		if !d.cs.DisableCapacities && valueCap != 0 {
+		if valueLen != 0 || !d.cs.DisableCapacities && valueCap != 0 {
+			d.w.Write(openParenBytes)
 			if valueLen != 0 {
-				d.w.Write(spaceBytes)
+				d.w.Write(lenEqualsBytes)
+				printInt(d.w, int64(valueLen), 10)
 			}
-			d.w.Write(capEqualsBytes)
-			printInt(d.w, int64(valueCap), 10)
+			if !d.cs.DisableCapacities && valueCap != 0 {
+				if valueLen != 0 {
+					d.w.Write(spaceBytes)
+				}
+				d.w.Write(capEqualsBytes)
+				printInt(d.w, int64(valueCap), 10)
+			}
+			d.w.Write(closeParenBytes)
+			d.w.Write(spaceBytes)
 		}
-		d.w.Write(closeParenBytes)
-		d.w.Write(spaceBytes)
 	}
 
 	// Call Stringer/error interfaces if they exist and the handle methods flag

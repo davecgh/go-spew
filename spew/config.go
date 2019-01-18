@@ -76,6 +76,10 @@ type ConfigState struct {
 	// data structures in tests.
 	DisableCapacities bool
 
+	// DisableLengths specifies whether to disable the printing of lengths
+	// for strings, arrays, slices, maps and channels.
+	DisableLengths bool
+
 	// ContinueOnMethod specifies whether or not recursion should continue once
 	// a custom error or Stringer interface is invoked.  The default, false,
 	// means it will print the results of invoking the custom error or Stringer
