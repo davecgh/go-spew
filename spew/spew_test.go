@@ -132,6 +132,7 @@ func initSpewTests() {
 	scsContinue := &spew.ConfigState{Indent: " ", ContinueOnMethod: true}
 	scsNoPtrAddr := &spew.ConfigState{DisablePointerAddresses: true}
 	scsNoCap := &spew.ConfigState{DisableCapacities: true}
+	scsNoNativeTypes := &spew.ConfigState{Indent: " ", DisableNativeTypes: true}
 
 	// Variables for tests on types which implement Stringer interface with and
 	// without a pointer receiver.
@@ -153,6 +154,26 @@ func initSpewTests() {
 	}
 	dt := depthTester{indirCir1{nil}, [1]string{"arr"}, []string{"slice"},
 		map[string]int{"one": 1}}
+
+	// nestedNativeTypesTester and nativeTypesTester are used to test the
+	// disabling of printing of native types.
+	type nestedNativeTypesTester struct {
+		intField int
+	}
+	type nativeTypesTester struct {
+		intField                     int
+		stringField                  string
+		stringSlice                  []string
+		nestedNativeTypesTester      nestedNativeTypesTester
+		nestedNativeTypesTesterSlice []nestedNativeTypesTester
+	}
+	nt := nativeTypesTester{
+		intField:                     1,
+		stringField:                  "A",
+		stringSlice:                  []string{"B"},
+		nestedNativeTypesTester:      nestedNativeTypesTester{intField: 2},
+		nestedNativeTypesTesterSlice: []nestedNativeTypesTester{{intField: 3}},
+	}
 
 	// Variable for tests on types which implement error interface.
 	te := customError(10)
@@ -203,6 +224,20 @@ func initSpewTests() {
 		{scsNoPtrAddr, fCSSdump, "", tptr, "(*spew_test.ptrTester)({\ns: (*struct {})({\n})\n})\n"},
 		{scsNoCap, fCSSdump, "", make([]string, 0, 10), "([]string) {\n}\n"},
 		{scsNoCap, fCSSdump, "", make([]string, 1, 10), "([]string) (len=1) {\n(string) \"\"\n}\n"},
+		{scsNoNativeTypes, fCSSdump, "", nt, "(spew_test.nativeTypesTester) {\n" +
+			" intField: 1,\n" +
+			" stringField: (len=1) \"A\",\n" +
+			" stringSlice: ([]string) (len=1 cap=1) {\n" +
+			"  (len=1) \"B\"\n" +
+			" },\n" +
+			" nestedNativeTypesTester: (spew_test.nestedNativeTypesTester) {\n" +
+			"  intField: 2\n" +
+			" },\n" +
+			" nestedNativeTypesTesterSlice: ([]spew_test.nestedNativeTypesTester) (len=1 cap=1) {\n" +
+			"  (spew_test.nestedNativeTypesTester) {\n" +
+			"   intField: 3\n" +
+			"  }\n" +
+			" }\n}\n"},
 	}
 }
 

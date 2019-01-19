@@ -263,6 +263,20 @@ func (d *dumpState) dump(v reflect.Value) {
 		return
 	}
 
+	if d.cs.DisableNativeTypes {
+		switch kind {
+		case reflect.Array,
+			reflect.Chan,
+			reflect.Func,
+			reflect.Map,
+			reflect.Slice,
+			reflect.Struct:
+		default:
+			d.indent()
+			d.ignoreNextType = true
+		}
+	}
+
 	// Print type information unless already handled elsewhere.
 	if !d.ignoreNextType {
 		d.indent()
