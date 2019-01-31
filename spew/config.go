@@ -98,6 +98,10 @@ type ConfigState struct {
 	// be spewed to strings and sorted by those strings.  This is only
 	// considered if SortKeys is true.
 	SpewKeys bool
+
+	// DisableFunctionTypePointerAddresses specifies whether to disable the printing of
+	// function types pointer addresses. This is useful when diffing data structures in tests.
+	DisableFunctionTypePointerAddresses bool
 }
 
 // Config is the active configuration of the top-level functions.

@@ -123,6 +123,10 @@ func redirStdout(f func()) ([]byte, error) {
 	return ioutil.ReadFile(fileName)
 }
 
+func someFunc(value string) string {
+	return value
+}
+
 func initSpewTests() {
 	// Config states with various settings.
 	scsDefault := spew.NewDefaultConfig()
@@ -131,6 +135,7 @@ func initSpewTests() {
 	scsMaxDepth := &spew.ConfigState{Indent: " ", MaxDepth: 1}
 	scsContinue := &spew.ConfigState{Indent: " ", ContinueOnMethod: true}
 	scsNoPtrAddr := &spew.ConfigState{DisablePointerAddresses: true}
+	scsNoFuncPtrAddr := &spew.ConfigState{DisablePointerAddresses: true, DisableFunctionTypePointerAddresses: true}
 	scsNoCap := &spew.ConfigState{DisableCapacities: true}
 
 	// Variables for tests on types which implement Stringer interface with and
@@ -138,10 +143,18 @@ func initSpewTests() {
 	ts := stringer("test")
 	tps := pstringer("test")
 
+	type someFuncType func(string) string
+
 	type ptrTester struct {
 		s *struct{}
 	}
+
+	type ptrFuncTester struct {
+		funcField someFuncType
+	}
+
 	tptr := &ptrTester{s: &struct{}{}}
+	tptrFunc := &ptrFuncTester{funcField: someFunc}
 
 	// depthTester is used to test max depth handling for structs, array, slices
 	// and maps.
@@ -201,6 +214,9 @@ func initSpewTests() {
 			"(error: 10) 10\n"},
 		{scsNoPtrAddr, fCSFprint, "", tptr, "<*>{<*>{}}"},
 		{scsNoPtrAddr, fCSSdump, "", tptr, "(*spew_test.ptrTester)({\ns: (*struct {})({\n})\n})\n"},
+
+		{scsNoFuncPtrAddr, fCSSdump, "", tptrFunc, "(*spew_test.ptrFuncTester)({\nfuncField: (spew_test.someFuncType) <spew_test.someFuncType Value>\n})\n"},
+
 		{scsNoCap, fCSSdump, "", make([]string, 0, 10), "([]string) {\n}\n"},
 		{scsNoCap, fCSSdump, "", make([]string, 1, 10), "([]string) (len=1) {\n(string) \"\"\n}\n"},
 	}
