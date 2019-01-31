@@ -433,7 +433,14 @@ func (d *dumpState) dump(v reflect.Value) {
 	case reflect.Uintptr:
 		printHexPtr(d.w, uintptr(v.Uint()))
 
-	case reflect.UnsafePointer, reflect.Chan, reflect.Func:
+	case reflect.Func:
+		if d.cs.DisableFunctionTypePointerAddresses {
+			fmt.Fprintf(d.w, "%v", v.String())
+		} else {
+			printHexPtr(d.w, v.Pointer())
+		}
+
+	case reflect.UnsafePointer, reflect.Chan:
 		printHexPtr(d.w, v.Pointer())
 
 	// There were not any other types at the time this code was written, but
