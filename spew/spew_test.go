@@ -23,7 +23,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
+	"github.com/coreyog/go-spew/spew"
 )
 
 // spewFunc is used to identify which public function of the spew package or
@@ -187,7 +187,7 @@ func initSpewTests() {
 		{scsDefault, fSprintf, "%v", complex(float32(-3), -4), "(-3-4i)"},
 		{scsDefault, fSprintln, "", complex(float64(-5), -6), "(-5-6i)\n"},
 		{scsDefault, fCSFdump, "", it, "(spew_test.ignoreTester) {\n" +
-			" visible: (bool) true\n }\n"},
+			" visible: (bool) true\n}\n"},
 		{scsNoMethods, fCSFprint, "", ts, "test"},
 		{scsNoMethods, fCSFprint, "", &ts, "<*>test"},
 		{scsNoMethods, fCSFprint, "", tps, "test"},

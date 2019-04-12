@@ -75,7 +75,7 @@ import (
     "html"
     "net/http"
 
-    "github.com/davecgh/go-spew/spew"
+    "github.com/coreyog/go-spew/spew"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
