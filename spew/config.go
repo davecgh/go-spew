@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 )
 
 // ConfigState houses the configuration options used by spew to format and
@@ -271,7 +270,9 @@ See Fdump if you would prefer dumping to an arbitrary io.Writer or Sdump to
 get the formatted result as a string.
 */
 func (c *ConfigState) Dump(a ...interface{}) {
-	fdump(c, os.Stdout, a...)
+	var buf bytes.Buffer
+	fdump(c, &buf, a...)
+	fmt.Print(buf.String())
 }
 
 // Sdump returns a string with the passed arguments formatted exactly the same
