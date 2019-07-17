@@ -254,7 +254,7 @@ func newValuesSorter(values []reflect.Value, cs *ConfigState) sort.Interface {
 // directly, or whether it should be considered for sorting by surrogate keys
 // (if the ConfigState allows it).
 func canSortSimply(kind reflect.Kind) bool {
-	// This switch parallels valueSortLess, except for the default case.
+	// This switch parallels valueLessEqual, except for the default case.
 	switch kind {
 	case reflect.Bool:
 		return true
@@ -289,43 +289,55 @@ func (s *valuesSorter) Swap(i, j int) {
 	}
 }
 
-// valueSortLess returns whether the first value should sort before the second
+// valueLessEqual returns whether the first value should sort before the second
 // value.  It is used by valueSorter.Less as part of the sort.Interface
 // implementation.
-func valueSortLess(a, b reflect.Value) bool {
+func valueLessEqual(a, b reflect.Value) (less, equal bool) {
 	switch a.Kind() {
 	case reflect.Bool:
-		return !a.Bool() && b.Bool()
+		av, bv := a.Bool(), b.Bool()
+		return !av && bv, av == bv
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		return a.Int() < b.Int()
+		av, bv := a.Int(), b.Int()
+		return av < bv, av == bv
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-		return a.Uint() < b.Uint()
+		av, bv := a.Uint(), b.Uint()
+		return av < bv, av == bv
 	case reflect.Float32, reflect.Float64:
-		return a.Float() < b.Float()
+		av, bv := a.Float(), b.Float()
+		return av < bv, av == bv
 	case reflect.String:
-		return a.String() < b.String()
+		av, bv := a.String(), b.String()
+		return av < bv, av == bv
 	case reflect.Uintptr:
-		return a.Uint() < b.Uint()
+		av, bv := a.Uint(), b.Uint()
+		return av < bv, av == bv
 	case reflect.Array:
 		// Compare the contents of both arrays.
 		l := a.Len()
 		for i := 0; i < l; i++ {
 			av := a.Index(i)
 			bv := b.Index(i)
-			if av.Interface() == bv.Interface() {
+
+			less, equal := valueLessEqual(av, bv)
+			if equal {
 				continue
 			}
-			return valueSortLess(av, bv)
+
+			return less, false
 		}
 	}
-	return a.String() < b.String()
+
+	av, bv := a.String(), b.String()
+	return av < bv, av == bv
 }
 
 // Less returns whether the value at index i should sort before the
 // value at index j.  It is part of the sort.Interface implementation.
 func (s *valuesSorter) Less(i, j int) bool {
 	if s.strings == nil {
-		return valueSortLess(s.values[i], s.values[j])
+		less, _ := valueLessEqual(s.values[i], s.values[j])
+		return less
 	}
 	return s.strings[i] < s.strings[j]
 }
