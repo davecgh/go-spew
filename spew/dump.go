@@ -21,7 +21,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -505,5 +504,7 @@ See Fdump if you would prefer dumping to an arbitrary io.Writer or Sdump to
 get the formatted result as a string.
 */
 func Dump(a ...interface{}) {
-	fdump(&Config, os.Stdout, a...)
+	var buf bytes.Buffer
+	fdump(&Config, &buf, a...)
+	fmt.Print(buf.String())
 }
