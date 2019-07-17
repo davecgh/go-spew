@@ -1039,4 +1039,34 @@ func TestDumpSortedKeys(t *testing.T) {
 		t.Errorf("Sorted keys mismatch:\n  %v %v", s, expected)
 	}
 
+	type structWithUnexportedMapWithArrayKey struct {
+		f map[[3]byte]int
+	}
+	s = cfg.Sdump(structWithUnexportedMapWithArrayKey{
+		map[[3]byte]int{
+			[3]byte{0x1, 0x2, 0x3}: 2,
+			[3]byte{0x1, 0x3, 0x2}: 3,
+			[3]byte{0x1, 0x2, 0x2}: 1,
+		},
+	})
+	expected =
+		`(spew_test.structWithUnexportedMapWithArrayKey) {
+f: (map[[3]uint8]int) (len=3) {
+([3]uint8) (len=3 cap=3) {
+00000000  01 02 02                                          |...|
+}: (int) 1,
+([3]uint8) (len=3 cap=3) {
+00000000  01 02 03                                          |...|
+}: (int) 2,
+([3]uint8) (len=3 cap=3) {
+00000000  01 03 02                                          |...|
+}: (int) 3
+}
+}
+`
+
+	if s != expected {
+		t.Errorf("Sorted keys mismatch:\n  %v %v", s, expected)
+	}
+
 }
