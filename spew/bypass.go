@@ -31,9 +31,6 @@ const (
 	// UnsafeDisabled is a build-time constant which specifies whether or
 	// not access to the unsafe package is available.
 	UnsafeDisabled = false
-
-	// ptrSize is the size of a pointer on the current arch.
-	ptrSize = unsafe.Sizeof((*byte)(nil))
 )
 
 type flag uintptr
