@@ -18,6 +18,7 @@ package spew
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -26,6 +27,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"mnk.ee/emails"
 )
 
 var (
@@ -430,7 +433,34 @@ func (d *dumpState) dump(v reflect.Value) {
 				d.w.Write([]byte(vtf.Name))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextIndent = true
-				d.dump(d.unpackValue(v.Field(i)))
+				val := d.unpackValue(v.Field(i))
+				if tag != "" {
+					if val.Type().Kind() != reflect.String || (val.Type().Kind() == reflect.Ptr && val.Type().Elem().Kind() == reflect.String) {
+						var newVal string
+						if val.Type().Kind() == reflect.Ptr {
+							newVal = val.Elem().String()
+						} else {
+							newVal = val.String()
+						}
+						tags := strings.Split(tag, ",")
+						for _, tag := range tags {
+							if tag == "normalize" {
+								newVal = normalize(newVal)
+							}
+						}
+						for _, tag := range tags {
+							if tag == "hash" {
+								newVal = hash(newVal)
+							}
+						}
+						if val.Type().Kind() == reflect.Ptr {
+							val.Elem().SetString(newVal)
+						} else {
+							val.SetString(newVal)
+						}
+					}
+				}
+				d.dump(val)
 			}
 			if writeNewline {
 				d.w.Write(newlineBytes)
@@ -456,6 +486,15 @@ func (d *dumpState) dump(v reflect.Value) {
 			fmt.Fprintf(d.w, "%v", v.String())
 		}
 	}
+}
+
+func normalize(str string) string {
+	return emails.Normalize(str)
+}
+
+func hash(str string) string {
+	hash := md5.Sum([]byte(str))
+	return hex.EncodeToString(hash[:])
 }
 
 // fdump is a helper function to consolidate the logic from the various public
