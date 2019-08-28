@@ -435,28 +435,14 @@ func (d *dumpState) dump(v reflect.Value) {
 				d.ignoreNextIndent = true
 				val := d.unpackValue(v.Field(i))
 				if tag != "" {
-					if val.Type().Kind() != reflect.String || (val.Type().Kind() == reflect.Ptr && val.Type().Elem().Kind() == reflect.String) {
-						var newVal string
-						if val.Type().Kind() == reflect.Ptr {
-							newVal = val.Elem().String()
-						} else {
-							newVal = val.String()
-						}
+					if val.Type().Kind() != reflect.String || ((val.Type().Kind() == reflect.Ptr || val.Type().Kind() == reflect.Slice) && val.Type().Elem().Kind() == reflect.String) {
 						tags := strings.Split(tag, ",")
-						for _, tag := range tags {
-							if tag == "normalize" {
-								newVal = normalize(newVal)
+						if val.Type().Kind() == reflect.Slice {
+							for i := 0; i < val.Len(); i++ {
+								applyTags(val.Index(i), tags...)
 							}
-						}
-						for _, tag := range tags {
-							if tag == "hash" {
-								newVal = hash(newVal)
-							}
-						}
-						if val.Type().Kind() == reflect.Ptr {
-							val.Elem().SetString(newVal)
 						} else {
-							val.SetString(newVal)
+							applyTags(val, tags...)
 						}
 					}
 				}
@@ -486,6 +472,24 @@ func (d *dumpState) dump(v reflect.Value) {
 			fmt.Fprintf(d.w, "%v", v.String())
 		}
 	}
+}
+
+func applyTags(val reflect.Value, tags ...string) {
+	if val.Type().Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	newVal := val.String()
+	for _, tag := range tags {
+		if tag == "normalize" {
+			newVal = normalize(newVal)
+		}
+	}
+	for _, tag := range tags {
+		if tag == "hash" {
+			newVal = hash(newVal)
+		}
+	}
+	val.SetString(newVal)
 }
 
 func normalize(str string) string {
