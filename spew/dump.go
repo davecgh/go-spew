@@ -282,14 +282,18 @@ func (d *dumpState) dump(v reflect.Value) {
 	case reflect.Map, reflect.String:
 		valueLen = v.Len()
 	}
-	if valueLen != 0 || !d.cs.DisableCapacities && valueCap != 0 {
+
+	showLen := !d.cs.DisableLengths && valueLen != 0
+	showCap := !d.cs.DisableCapacities && valueCap != 0
+
+	if showLen || showCap {
 		d.w.Write(openParenBytes)
-		if valueLen != 0 {
+		if showLen {
 			d.w.Write(lenEqualsBytes)
 			printInt(d.w, int64(valueLen), 10)
 		}
-		if !d.cs.DisableCapacities && valueCap != 0 {
-			if valueLen != 0 {
+		if showCap {
+			if showLen {
 				d.w.Write(spaceBytes)
 			}
 			d.w.Write(capEqualsBytes)

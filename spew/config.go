@@ -71,6 +71,11 @@ type ConfigState struct {
 	// pointer addresses. This is useful when diffing data structures in tests.
 	DisablePointerAddresses bool
 
+	// DisableLengths specifies whether to disable the printing of lengths
+	// for arrays, slices, maps and channels. This is useful when diffing
+	// data structures in tests.
+	DisableLengths bool
+
 	// DisableCapacities specifies whether to disable the printing of capacities
 	// for arrays, slices, maps and channels. This is useful when diffing
 	// data structures in tests.
