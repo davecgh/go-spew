@@ -52,9 +52,11 @@ type dumpState struct {
 	w                io.Writer
 	depth            int
 	pointers         map[uintptr]int
+	allPointers      map[uintptr]uint
 	ignoreNextType   bool
 	ignoreNextIndent bool
 	cs               *ConfigState
+	nextOrdinal      uint
 }
 
 // indent performs indentation according to the depth level and cs.Indent
@@ -95,7 +97,9 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 	// references.
 	nilFound := false
 	cycleFound := false
+	duplicateFound := false
 	indirects := 0
+	ordinal := uint(0)
 	ve := v
 	for ve.Kind() == reflect.Ptr {
 		if ve.IsNil() {
@@ -104,12 +108,39 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 		}
 		indirects++
 		addr := ve.Pointer()
-		pointerChain = append(pointerChain, addr)
+
 		if pd, ok := d.pointers[addr]; ok && pd < d.depth {
 			cycleFound = true
+		}
+
+		if d.allPointers != nil { // d.cs.NoDuplicates || d.cs.UseOrdinals
+			if ord, ok := d.allPointers[addr]; ok {
+				if d.cs.UseOrdinals {
+					ordinal = ord
+				}
+				if d.cs.NoDuplicates {
+					duplicateFound = true
+				}
+			} else {
+				if d.cs.UseOrdinals {
+					d.nextOrdinal++
+					ordinal = d.nextOrdinal
+				}
+				d.allPointers[addr] = ordinal
+			}
+		}
+
+		if ordinal > 0 {
+			pointerChain = append(pointerChain, uintptr(ordinal))
+		} else {
+			pointerChain = append(pointerChain, addr)
+		}
+
+		if cycleFound || duplicateFound {
 			indirects--
 			break
 		}
+
 		d.pointers[addr] = d.depth
 
 		ve = ve.Elem()
@@ -135,7 +166,11 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 			if i > 0 {
 				d.w.Write(pointerChainBytes)
 			}
-			printHexPtr(d.w, addr)
+			if d.cs.UseOrdinals {
+				printOrdinal(d.w, uint(addr))
+			} else {
+				printHexPtr(d.w, addr)
+			}
 		}
 		d.w.Write(closeParenBytes)
 	}
@@ -148,6 +183,9 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 
 	case cycleFound:
 		d.w.Write(circularBytes)
+
+	case duplicateFound:
+		d.w.Write(duplicateBytes)
 
 	default:
 		d.ignoreNextType = true
@@ -462,6 +500,9 @@ func fdump(cs *ConfigState, w io.Writer, a ...interface{}) {
 
 		d := dumpState{w: w, cs: cs}
 		d.pointers = make(map[uintptr]int)
+		if cs.NoDuplicates || cs.UseOrdinals {
+			d.allPointers = make(map[uintptr]uint)
+		}
 		d.dump(reflect.ValueOf(arg))
 		d.w.Write(newlineBytes)
 	}

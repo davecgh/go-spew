@@ -98,6 +98,19 @@ type ConfigState struct {
 	// be spewed to strings and sorted by those strings.  This is only
 	// considered if SortKeys is true.
 	SpewKeys bool
+
+	// NoDuplicates specifies that any given pointer should have
+	// its dereference dumped only once. This is similar to
+	// circularity detection, but applies to all pointers across a
+	// given dump action. This can consume much memory.
+	NoDuplicates bool
+
+	// UseOrdinals specifies that pointer values are to be
+	// replaced with monotonically increasing integers. It has no
+	// effect if DisablePointerAddresses is true; else, it
+	// provides some degree of stability across runs versus
+	// printing out raw pointers. This can consume much memory.
+	UseOrdinals bool
 }
 
 // Config is the active configuration of the top-level functions.
