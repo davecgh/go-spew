@@ -1111,6 +1111,12 @@ b: (int) 2
 	}
 }
 
+func a() {
+}
+
+func b() {
+}
+
 func TestDumpDuplicateOrdinals(t *testing.T) {
 	cfg := spew.ConfigState{NoDuplicates: true, UseOrdinals: true}
 	type info struct {
@@ -1121,9 +1127,12 @@ func TestDumpDuplicateOrdinals(t *testing.T) {
 		info1 *info
 		info2 *info
 		info3 *info
+		fn1   func()
+		fn2   func()
+		fn3   func()
 	}
 	i := &info{a: 1, b: 2}
-	v := twice{info1: i, info2: &info{a: 3, b: 4}, info3: i}
+	v := twice{info1: i, info2: &info{a: 3, b: 4}, info3: i, fn1: a, fn2: b, fn3: a}
 	//	vt := "spew_test.twice"
 	s := cfg.Sdump(v)
 	expected := `(spew_test.twice) {
@@ -1135,7 +1144,10 @@ info2: (*spew_test.info)(#2)({
 a: (int) 3,
 b: (int) 4
 }),
-info3: (*spew_test.info)(#1)(<already seen>)
+info3: (*spew_test.info)(#1)(<already seen>),
+fn1: (func()) #3,
+fn2: (func()) #4,
+fn3: (func()) #3
 }
 `
 	if s != expected {

@@ -216,9 +216,9 @@ func printHexPtr(w io.Writer, p uintptr) {
 	w.Write(buf)
 }
 
-func printOrdinal(w io.Writer, ord uint) {
+func printOrdinal(w io.Writer, ord uintptr) {
 	buf := make([]byte, 18)
-	base := uint(10)
+	base := uintptr(10)
 	i := len(buf) - 1
 	for ord >= base {
 		buf[i] = hexDigits[ord%base]
