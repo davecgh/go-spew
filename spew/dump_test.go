@@ -1151,6 +1151,6 @@ fn3: (func()) #3
 }
 `
 	if s != expected {
-		t.Errorf("Duplicate-pointers mismatch:\n  %v %v", s, expected)
+		t.Errorf("Duplicate-pointers+ordinals mismatch:\n  %v %v", s, expected)
 	}
 }
