@@ -522,10 +522,19 @@ func fdump(cs *ConfigState, w io.Writer, a ...interface{}) {
 		d := dumpState{w: w, cs: cs}
 		d.pointers = make(map[uintptr]int)
 		if cs.NoDuplicates || cs.UseOrdinals {
-			d.allPointers = make(map[uintptr]uintptr)
+			if cs.SpewState.allPointers == nil {
+				d.allPointers = make(map[uintptr]uintptr)
+			} else {
+				d.allPointers = cs.SpewState.allPointers
+			}
 		}
 		d.dump(reflect.ValueOf(arg))
 		d.w.Write(newlineBytes)
+		if d.allPointers != nil { // cs.NoDuplicates || cs.UseOrdinals
+			if cs.PreserveSpewState {
+				cs.SpewState.allPointers = d.allPointers
+			}
+		}
 	}
 }
 

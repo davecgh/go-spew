@@ -21,6 +21,12 @@ import (
 	"io"
 )
 
+// Wraps the end state of a spew (dump or format) operation for use by
+// the next operation, if so configured.
+type SpewState struct {
+	allPointers map[uintptr]uintptr
+}
+
 // Errorf is a wrapper for fmt.Errorf that treats each argument as if it were
 // passed with a default Formatter interface returned by NewFormatter.  It
 // returns the formatted string as a value that satisfies error.  See

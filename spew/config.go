@@ -111,6 +111,17 @@ type ConfigState struct {
 	// provides some degree of stability across runs versus
 	// printing out raw pointers. This can consume much memory.
 	UseOrdinals bool
+
+	// Preserve state of a spew (dump, format) operation for use
+	// by the next such operation (including across multiple
+	// arguments to a single API call as well as across API
+	// calls). Currently useful only when NoDuplicates is true.
+	PreserveSpewState bool
+
+	// The state of the last spew (dump, format) operation, if
+	// PreserveSpewState was when that operation was started.
+	// Can be copied to a different ConfigState object.
+	SpewState SpewState
 }
 
 // Config is the active configuration of the top-level functions.
