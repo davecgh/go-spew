@@ -102,7 +102,7 @@ type ConfigState struct {
 	// NoDuplicates specifies that any given pointer should have
 	// its dereference dumped only once. This is similar to
 	// circularity detection, but applies to all pointers across a
-	// given dump action. This can consume much memory.
+	// given dump action (or SpewState). This can consume much memory.
 	NoDuplicates bool
 
 	// UseOrdinals specifies that pointer values are to be
@@ -119,7 +119,7 @@ type ConfigState struct {
 	PreserveSpewState bool
 
 	// The state of the last spew (dump, format) operation, if
-	// PreserveSpewState was when that operation was started.
+	// PreserveSpewState was true when that operation was started.
 	// Can be copied to a different ConfigState object.
 	SpewState SpewState
 }
