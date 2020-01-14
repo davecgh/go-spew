@@ -51,6 +51,8 @@ var (
 	maxShortBytes         = []byte("<max>")
 	circularBytes         = []byte("<already shown>")
 	circularShortBytes    = []byte("<shown>")
+	duplicateBytes        = []byte("<already seen>")
+	duplicateShortBytes   = []byte("<seen>")
 	invalidAngleBytes     = []byte("<invalid>")
 	openBracketBytes      = []byte("[")
 	closeBracketBytes     = []byte("]")
@@ -210,6 +212,24 @@ func printHexPtr(w io.Writer, p uintptr) {
 	buf[i] = '0'
 
 	// Strip unused leading bytes.
+	buf = buf[i:]
+	w.Write(buf)
+}
+
+func printOrdinal(w io.Writer, ord uintptr) {
+	buf := make([]byte, 18)
+	base := uintptr(10)
+	i := len(buf) - 1
+	for ord >= base {
+		buf[i] = hexDigits[ord%base]
+		ord /= base
+		i--
+	}
+	buf[i] = hexDigits[ord]
+
+	i--
+	buf[i] = '#'
+
 	buf = buf[i:]
 	w.Write(buf)
 }

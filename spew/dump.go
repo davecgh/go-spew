@@ -52,9 +52,11 @@ type dumpState struct {
 	w                io.Writer
 	depth            int
 	pointers         map[uintptr]int
+	allPointers      map[uintptr]uintptr
 	ignoreNextType   bool
 	ignoreNextIndent bool
 	cs               *ConfigState
+	nextOrdinal      uintptr
 }
 
 // indent performs indentation according to the depth level and cs.Indent
@@ -77,6 +79,50 @@ func (d *dumpState) unpackValue(v reflect.Value) reflect.Value {
 	return v
 }
 
+func (d *dumpState) isPointerSeen(addr uintptr) (seen bool, ordinal uintptr) {
+	ordinal = uintptr(addr)
+
+	if d.allPointers == nil {
+		return false, ordinal
+	}
+
+	// d.cs.NoDuplicates || d.cs.UseOrdinals
+	duplicateFound := false
+	if ord, ok := d.allPointers[addr]; ok {
+		if d.cs.UseOrdinals {
+			ordinal = ord
+		}
+		if d.cs.NoDuplicates {
+			duplicateFound = true
+		}
+	} else {
+		if d.cs.UseOrdinals {
+			d.nextOrdinal++
+			ordinal = d.nextOrdinal
+		}
+		d.allPointers[addr] = ordinal
+	}
+
+	return duplicateFound, ordinal
+}
+
+func (d *dumpState) printPtrOrOrdinal(addr uintptr) {
+	if d.cs.UseOrdinals {
+		printOrdinal(d.w, addr)
+	} else {
+		printHexPtr(d.w, addr)
+	}
+}
+
+func (d *dumpState) printPtr(addr uintptr) {
+	if d.cs.UseOrdinals {
+		_, addr := d.isPointerSeen(addr)
+		printOrdinal(d.w, addr)
+	} else {
+		printHexPtr(d.w, addr)
+	}
+}
+
 // dumpPtr handles formatting of pointers by indirecting them as necessary.
 func (d *dumpState) dumpPtr(v reflect.Value) {
 	// Remove pointers at or below the current depth from map used to detect
@@ -95,6 +141,7 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 	// references.
 	nilFound := false
 	cycleFound := false
+	duplicateFound := false
 	indirects := 0
 	ve := v
 	for ve.Kind() == reflect.Ptr {
@@ -104,12 +151,21 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 		}
 		indirects++
 		addr := ve.Pointer()
-		pointerChain = append(pointerChain, addr)
+
 		if pd, ok := d.pointers[addr]; ok && pd < d.depth {
 			cycleFound = true
+		}
+
+		dup, ordinal := d.isPointerSeen(addr)
+
+		pointerChain = append(pointerChain, ordinal)
+
+		if cycleFound || dup {
 			indirects--
+			duplicateFound = true
 			break
 		}
+
 		d.pointers[addr] = d.depth
 
 		ve = ve.Elem()
@@ -135,7 +191,7 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 			if i > 0 {
 				d.w.Write(pointerChainBytes)
 			}
-			printHexPtr(d.w, addr)
+			d.printPtrOrOrdinal(addr)
 		}
 		d.w.Write(closeParenBytes)
 	}
@@ -148,6 +204,9 @@ func (d *dumpState) dumpPtr(v reflect.Value) {
 
 	case cycleFound:
 		d.w.Write(circularBytes)
+
+	case duplicateFound:
+		d.w.Write(duplicateBytes)
 
 	default:
 		d.ignoreNextType = true
@@ -431,10 +490,10 @@ func (d *dumpState) dump(v reflect.Value) {
 		d.w.Write(closeBraceBytes)
 
 	case reflect.Uintptr:
-		printHexPtr(d.w, uintptr(v.Uint()))
+		d.printPtr(uintptr(v.Uint()))
 
 	case reflect.UnsafePointer, reflect.Chan, reflect.Func:
-		printHexPtr(d.w, v.Pointer())
+		d.printPtr(v.Pointer())
 
 	// There were not any other types at the time this code was written, but
 	// fall back to letting the default fmt package handle it in case any new
@@ -462,8 +521,20 @@ func fdump(cs *ConfigState, w io.Writer, a ...interface{}) {
 
 		d := dumpState{w: w, cs: cs}
 		d.pointers = make(map[uintptr]int)
+		if cs.NoDuplicates || cs.UseOrdinals {
+			if cs.SpewState.allPointers == nil {
+				d.allPointers = make(map[uintptr]uintptr)
+			} else {
+				d.allPointers = cs.SpewState.allPointers
+			}
+		}
 		d.dump(reflect.ValueOf(arg))
 		d.w.Write(newlineBytes)
+		if d.allPointers != nil { // cs.NoDuplicates || cs.UseOrdinals
+			if cs.PreserveSpewState {
+				cs.SpewState.allPointers = d.allPointers
+			}
+		}
 	}
 }
 

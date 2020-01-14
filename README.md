@@ -185,6 +185,30 @@ options. See the ConfigState documentation for more details.
 	spewed to strings and sorted by those strings.  This is only considered
 	if SortKeys is true.
 
+* NoDuplicates
+	NoDuplicates specifies that any given pointer should have
+	its dereference dumped only once. This is similar to
+	circularity detection, but applies to all pointers across a
+	given dump action (or SpewState). This can consume much memory.
+
+* UseOrdinals
+	UseOrdinals specifies that pointer values are to be
+	replaced with monotonically increasing integers. It has no
+	effect if DisablePointerAddresses is true; else, it
+	provides some degree of stability across runs versus
+	printing out raw pointers. This can consume much memory.
+
+* PreserveSpewState
+	Preserve state of a spew (dump, format) operation for use
+	by the next such operation (including across multiple
+	arguments to a single API call as well as across API
+	calls). Currently useful only when NoDuplicates is true.
+
+* SpewState
+	The state of the last spew (dump, format) operation, if
+	PreserveSpewState was true when that operation was started.
+	Can be copied to a different ConfigState object.
+
 ```
 
 ## Unsafe Package Dependency
