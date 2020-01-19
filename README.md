@@ -5,16 +5,8 @@ go-spew
 [![ISC License](http://img.shields.io/badge/license-ISC-blue.svg)](http://copyfree.org)
 [![Coverage Status](https://img.shields.io/coveralls/davecgh/go-spew.svg)](https://coveralls.io/r/davecgh/go-spew?branch=master)
 
-Go-spew implements a deep pretty printer for Go data structures to aid in
-debugging.  A comprehensive suite of tests with 100% test coverage is provided
-to ensure proper functionality.  See `test_coverage.txt` for the gocov coverage
-report.  Go-spew is licensed under the liberal ISC license, so it may be used in
-open source or commercial projects.
+Simply added IgnoreFieldByName(string) and IgnoreFieldByType(string) to suppress dumps.  IgnoreFieldByType will also add []name and *name so pointers to and arrays of the speciified name are also ignored.
 
-If you're interested in reading about how this package came to life and some
-of the challenges involved in providing a deep pretty printer, there is a blog
-post about it
-[here](https://web.archive.org/web/20160304013555/https://blog.cyphertite.com/go-spew-a-journey-into-dumping-go-data-structures/).
 
 ## Documentation
 
@@ -31,7 +23,7 @@ http://localhost:6060/pkg/github.com/davecgh/go-spew/spew
 ## Installation
 
 ```bash
-$ go get -u github.com/davecgh/go-spew/spew
+$ go get -u github.com/klaxxon/go-spew/spew
 ```
 
 ## Quick Start
@@ -39,7 +31,7 @@ $ go get -u github.com/davecgh/go-spew/spew
 Add this import line to the file you're working in:
 
 ```Go
-import "github.com/davecgh/go-spew/spew"
+import "github.com/klaxxon/go-spew/spew"
 ```
 
 To dump a variable with full newlines, indentation, type, and pointer
