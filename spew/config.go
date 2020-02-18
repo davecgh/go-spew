@@ -104,7 +104,7 @@ type ConfigState struct {
 	ignoreFieldByType map[string]bool
 }
 
-func (c *ConfigState) ResetIfnoreFields() {
+func (c *ConfigState) ResetIgnoreFields() {
 	c.ignoreFieldByName = make(map[string]bool)
 	c.ignoreFieldByType = make(map[string]bool)
 }
