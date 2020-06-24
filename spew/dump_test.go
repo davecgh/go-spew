@@ -44,6 +44,7 @@ base test element are also tested to ensure proper indirection across all types.
 - Struct that contains custom type with Stringer pointer interface via both
   exported and unexported fields
 - Struct that contains embedded struct and field to same struct
+- Struct that contains unexported field and exported field
 - Uintptr to 0 (null pointer)
 - Uintptr address of real variable
 - Unsafe.Pointer to 0 (null pointer)
@@ -1039,4 +1040,62 @@ func TestDumpSortedKeys(t *testing.T) {
 		t.Errorf("Sorted keys mismatch:\n  %v %v", s, expected)
 	}
 
+}
+
+func TestDumpUnexportedFields(t *testing.T) {
+	dumpTests = make([]dumpTest, 0)
+
+	// Struct with both exported and unexported field.
+	type s struct {
+		ExportedVarA   int8
+		ExportedVarB   int8
+		unExportedVarC int8
+		unExportedVarD int8
+	}
+	v := s{10, 20, 30, 40}
+	nv := (*s)(nil)
+	pv := &v
+	vAddr := fmt.Sprintf("%p", pv)
+	pvAddr := fmt.Sprintf("%p", &pv)
+	vt := "spew_test.s"
+	vt2 := "int8"
+	vs := "{\n ExportedVarA: (" + vt2 + ") 10,\n ExportedVarB: (" + vt2 + ") 20,\n}"
+
+	addDumpTest(v, "("+vt+") "+vs+"\n")
+	addDumpTest(pv, "(*"+vt+")("+vAddr+")("+vs+")\n")
+	addDumpTest(&pv, "(**"+vt+")("+pvAddr+"->"+vAddr+")("+vs+")\n")
+	addDumpTest(nv, "(*"+vt+")(<nil>)\n")
+
+	type s2 struct {
+		unExportedVarA int8
+		unExportedVarB int8
+		ExportedVarC   int8
+		ExportedVarD   int8
+	}
+	v2 := s2{10, 20, 30, 40}
+	nv2 := (*s2)(nil)
+	pv2 := &v2
+	v2Addr := fmt.Sprintf("%p", pv2)
+	pv2Addr := fmt.Sprintf("%p", &pv2)
+	v2t := "spew_test.s2"
+	v2t2 := "int8"
+	v2s := "{\n ExportedVarC: (" + v2t2 + ") 30,\n ExportedVarD: (" + v2t2 + ") 40\n}"
+
+	addDumpTest(v2, "("+v2t+") "+v2s+"\n")
+	addDumpTest(pv2, "(*"+v2t+")("+v2Addr+")("+v2s+")\n")
+	addDumpTest(&pv2, "(**"+v2t+")("+pv2Addr+"->"+v2Addr+")("+v2s+")\n")
+	addDumpTest(nv2, "(*"+v2t+")(<nil>)\n")
+
+	spew.Config.DisableUnexported = true
+
+	t.Logf("Running %d tests", len(dumpTests))
+	for i, test := range dumpTests {
+		buf := new(bytes.Buffer)
+		spew.Fdump(buf, test.in)
+		s := buf.String()
+		if testFailed(s, test.wants) {
+			t.Errorf("Dump #%d\n got: %s %s", i, s, stringizeWants(test.wants))
+			continue
+		}
+	}
 }

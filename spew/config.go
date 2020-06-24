@@ -76,6 +76,10 @@ type ConfigState struct {
 	// data structures in tests.
 	DisableCapacities bool
 
+	// DisableUnexported specifies whether to disable the unexported fields of
+	// struct. This is useful for debugging APIs.
+	DisableUnexported bool
+
 	// ContinueOnMethod specifies whether or not recursion should continue once
 	// a custom error or Stringer interface is invoked.  The default, false,
 	// means it will print the results of invoking the custom error or Stringer
