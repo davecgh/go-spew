@@ -81,7 +81,8 @@ import (
 func handler(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "text/html")
     fmt.Fprintf(w, "Hi there, %s!", r.URL.Path[1:])
-    fmt.Fprintf(w, "<!--\n" + html.EscapeString(spew.Sdump(w)) + "\n-->")
+	sdump := html.EscapeString(spew.Sdump(w))
+	fmt.Fprintf(w, "<pre>\n\n%s</pre>", sdump)
 }
 
 func main() {

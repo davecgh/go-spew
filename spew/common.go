@@ -134,7 +134,9 @@ func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool)
 			w.Write(spaceBytes)
 			return false
 		}
-		w.Write([]byte(iface.String()))
+		var bbuf bytes.Buffer
+		bbuf.WriteString(iface.String())
+		w.Write(bbuf.Bytes())
 		return true
 	}
 	return false
