@@ -189,8 +189,19 @@ func printHexPtr(w io.Writer, p uintptr) {
 		w.Write(nilAngleBytes)
 		return
 	}
+	printHex(w, num)
+}
 
-	// Max uint64 is 16 bytes in hex + 2 bytes for '0x' prefix
+// printHexVal outputs a uintptr value formatted as hexadecimal with a leading
+// '0x' prefix to Writer w. Unlike printHexPtr, zero is printed as "0x0"
+// rather than "<nil>" because uintptr is an integer type, not a pointer.
+func printHexVal(w io.Writer, p uintptr) {
+	printHex(w, uint64(p))
+}
+
+// printHex outputs a uint64 formatted as hexadecimal with a leading '0x'
+// prefix to Writer w.
+func printHex(w io.Writer, num uint64) {
 	buf := make([]byte, 18)
 
 	// It's simpler to construct the hex string right to left.
