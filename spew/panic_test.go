@@ -2,6 +2,7 @@ package spew_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
@@ -53,4 +54,22 @@ func TestDumpNestedCustomErrorWrapDoesNotPanic(t *testing.T) {
 		}
 	}()
 	_ = spew.Sdump(err)
+}
+
+type mapStringer map[int]int
+
+func (x mapStringer) String() string {
+	return fmt.Sprintf("{M1:%d}", len(x))
+}
+
+func TestDumpMapValueStringerDoesNotPanic(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("spew.Sdump panicked: %v", r)
+		}
+	}()
+	out := spew.Sdump(mapStringer{1: 2})
+	if strings.Contains(out, "PANIC=") {
+		t.Fatalf("spew.Sdump output contains panic: %s", out)
+	}
 }
