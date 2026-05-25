@@ -97,6 +97,13 @@ func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool)
 		v = unsafeReflectValue(v)
 	}
 
+	// Try value-based interface methods before converting to a pointer. This
+	// avoids invalid method invocations when unsafe addressability is used to
+	// force pointer receivers on addressable values.
+	if handled, matched := invokeIfaceMethods(cs, w, v); matched {
+		return handled
+	}
+
 	// Choose whether or not to do error and Stringer interface lookups against
 	// the base type or a pointer to the base type depending on settings.
 	// Technically calling one of these methods with a pointer receiver can
@@ -107,37 +114,47 @@ func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool)
 		v = unsafeReflectValue(v)
 	}
 	if v.CanAddr() {
-		v = v.Addr()
+		handled, _ = invokeIfaceMethods(cs, w, v.Addr())
+		return handled
+	}
+	return false
+}
+
+func invokeIfaceMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool, matched bool) {
+	if !v.CanInterface() {
+		return false, false
 	}
 
 	// Is it an error or Stringer?
 	switch iface := v.Interface().(type) {
 	case error:
 		defer catchPanic(w, v)
+		matched = true
 		if cs.ContinueOnMethod {
 			w.Write(openParenBytes)
 			w.Write([]byte(iface.Error()))
 			w.Write(closeParenBytes)
 			w.Write(spaceBytes)
-			return false
+			return false, true
 		}
 
 		w.Write([]byte(iface.Error()))
-		return true
+		return true, true
 
 	case fmt.Stringer:
 		defer catchPanic(w, v)
+		matched = true
 		if cs.ContinueOnMethod {
 			w.Write(openParenBytes)
 			w.Write([]byte(iface.String()))
 			w.Write(closeParenBytes)
 			w.Write(spaceBytes)
-			return false
+			return false, true
 		}
 		w.Write([]byte(iface.String()))
-		return true
+		return true, true
 	}
-	return false
+	return false, false
 }
 
 // printBool outputs a boolean value as true or false to Writer w.
