@@ -431,7 +431,7 @@ func (d *dumpState) dump(v reflect.Value) {
 		d.w.Write(closeBraceBytes)
 
 	case reflect.Uintptr:
-		printHexPtr(d.w, uintptr(v.Uint()))
+		printHexVal(d.w, uintptr(v.Uint()))
 
 	case reflect.UnsafePointer, reflect.Chan, reflect.Func:
 		printHexPtr(d.w, v.Pointer())

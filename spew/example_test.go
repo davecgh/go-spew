@@ -101,7 +101,7 @@ func ExampleDump() {
 	// Output:
 	// (spew_test.Foo) {
 	//  unexportedField: (spew_test.Bar) {
-	//   data: (uintptr) <nil>
+	//   data: (uintptr) 0x0
 	//  },
 	//  ExportedField: (map[interface {}]interface {}) (len=1) {
 	//   (string) (len=3) "one": (bool) true
@@ -180,7 +180,7 @@ func ExampleConfigState_Dump() {
 	// Output:
 	// (spew_test.Foo) {
 	// 	unexportedField: (spew_test.Bar) {
-	// 		data: (uintptr) <nil>
+	// 		data: (uintptr) 0x0
 	// 	},
 	// 	ExportedField: (map[interface {}]interface {}) (len=1) {
 	//		(string) (len=3) "one": (bool) true
@@ -188,7 +188,7 @@ func ExampleConfigState_Dump() {
 	// }
 	// (spew_test.Foo) {
 	//  unexportedField: (spew_test.Bar) {
-	//   data: (uintptr) <nil>
+	//   data: (uintptr) 0x0
 	//  },
 	//  ExportedField: (map[interface {}]interface {}) (len=1) {
 	//   (string) (len=3) "one": (bool) true

@@ -349,7 +349,7 @@ func (f *formatState) format(v reflect.Value) {
 		f.fs.Write(closeBraceBytes)
 
 	case reflect.Uintptr:
-		printHexPtr(f.fs, uintptr(v.Uint()))
+		printHexVal(f.fs, uintptr(v.Uint()))
 
 	case reflect.UnsafePointer, reflect.Chan, reflect.Func:
 		printHexPtr(f.fs, v.Pointer())
