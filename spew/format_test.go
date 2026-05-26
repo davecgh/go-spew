@@ -1041,7 +1041,7 @@ func addUintptrFormatterTests() {
 	vAddr := fmt.Sprintf("%p", pv)
 	pvAddr := fmt.Sprintf("%p", &pv)
 	vt := "uintptr"
-	vs := "<nil>"
+	vs := "0x0"
 	addFormatterTest("%v", v, vs)
 	addFormatterTest("%v", pv, "<*>"+vs)
 	addFormatterTest("%v", &pv, "<**>"+vs)

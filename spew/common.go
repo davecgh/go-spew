@@ -180,16 +180,25 @@ func printComplex(w io.Writer, c complex128, floatPrecision int) {
 	w.Write(closeParenBytes)
 }
 
+// printHexVal outputs a uintptr formatted as hexadecimal with a leading '0x'
+// prefix to Writer w. Unlike printHexPtr, zero values are printed as 0x0.
+func printHexVal(w io.Writer, p uintptr) {
+	printHex(w, uint64(p))
+}
+
 // printHexPtr outputs a uintptr formatted as hexadecimal with a leading '0x'
 // prefix to Writer w.
 func printHexPtr(w io.Writer, p uintptr) {
-	// Null pointer.
 	num := uint64(p)
 	if num == 0 {
 		w.Write(nilAngleBytes)
 		return
 	}
 
+	printHex(w, num)
+}
+
+func printHex(w io.Writer, num uint64) {
 	// Max uint64 is 16 bytes in hex + 2 bytes for '0x' prefix
 	buf := make([]byte, 18)
 
