@@ -100,6 +100,28 @@ func unsafeReflectValue(v reflect.Value) reflect.Value {
 	return v
 }
 
+// valueFromAddr creates a reflect.Value pointing to the memory at addr
+// interpreted as targetType. If targetType is a pointer (*T), the returned
+// Value has type *T. If targetType is not a pointer (T), the returned Value
+// has type *T pointing to addr. If addr is 0, a nil pointer of the appropriate
+// pointer type is returned.
+func valueFromAddr(addr uintptr, targetType reflect.Type) (reflect.Value, bool) {
+	if targetType == nil {
+		return reflect.Value{}, false
+	}
+	if addr == 0 {
+		if targetType.Kind() == reflect.Ptr {
+			return reflect.Zero(targetType), true
+		}
+		return reflect.Zero(reflect.PtrTo(targetType)), true
+	}
+	uptr := *(*unsafe.Pointer)(unsafe.Pointer(&addr))
+	if targetType.Kind() == reflect.Ptr {
+		return reflect.NewAt(targetType.Elem(), uptr), true
+	}
+	return reflect.NewAt(targetType, uptr), true
+}
+
 // Sanity checks against future reflect package changes
 // to the type or semantics of the Value.flag field.
 func init() {

@@ -36,3 +36,8 @@ const (
 func unsafeReflectValue(v reflect.Value) reflect.Value {
 	return v
 }
+
+// valueFromAddr is a stub version when the unsafe package is not available.
+func valueFromAddr(addr uintptr, targetType reflect.Type) (reflect.Value, bool) {
+	return reflect.Value{}, false
+}

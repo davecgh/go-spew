@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 )
 
 // ConfigState houses the configuration options used by spew to format and
@@ -98,6 +99,26 @@ type ConfigState struct {
 	// be spewed to strings and sorted by those strings.  This is only
 	// considered if SortKeys is true.
 	SpewKeys bool
+
+	// FollowUintptrs specifies whether or not to follow uintptr addresses as
+	// if they were pointers to a target type during traversal.
+	FollowUintptrs bool
+
+	// FollowUintptrType specifies the reflect.Type to convert uintptr addresses
+	// to when FollowUintptrs is true and no field-specific type is registered.
+	FollowUintptrType reflect.Type
+
+	// UintptrTypes maps struct field names to reflect.Type to allow
+	// configuring different target types for specific uintptr fields.
+	UintptrTypes map[string]reflect.Type
+
+	// PointerTypes maps reflect.Type to a target reflect.Type to convert
+	// specified pointer or uintptr types during traversal.
+	PointerTypes map[reflect.Type]reflect.Type
+
+	// PointerConverter specifies a custom function to convert a pointer or
+	// uintptr address to an arbitrary value during traversal.
+	PointerConverter func(addr uintptr, t reflect.Type) (interface{}, bool)
 }
 
 // Config is the active configuration of the top-level functions.
@@ -303,4 +324,40 @@ func (c *ConfigState) convertArgs(args []interface{}) (formatters []interface{})
 // 	SortKeys: false
 func NewDefaultConfig() *ConfigState {
 	return &ConfigState{Indent: " "}
+}
+
+// SetUintptrType sets the default target type to follow uintptr addresses as
+// and enables FollowUintptrs.
+func (c *ConfigState) SetUintptrType(t reflect.Type) *ConfigState {
+	c.FollowUintptrs = true
+	c.FollowUintptrType = t
+	return c
+}
+
+// SetUintptrFieldType sets a target type for a specific struct field name and
+// enables FollowUintptrs.
+func (c *ConfigState) SetUintptrFieldType(field string, t reflect.Type) *ConfigState {
+	c.FollowUintptrs = true
+	if c.UintptrTypes == nil {
+		c.UintptrTypes = make(map[string]reflect.Type)
+	}
+	c.UintptrTypes[field] = t
+	return c
+}
+
+// RegisterPointerType registers a type conversion from one reflect.Type to
+// another during traversal.
+func (c *ConfigState) RegisterPointerType(from, to reflect.Type) *ConfigState {
+	if c.PointerTypes == nil {
+		c.PointerTypes = make(map[reflect.Type]reflect.Type)
+	}
+	c.PointerTypes[from] = to
+	return c
+}
+
+// SetPointerConverter registers a custom conversion function for pointer or
+// uintptr addresses during traversal.
+func (c *ConfigState) SetPointerConverter(fn func(addr uintptr, t reflect.Type) (interface{}, bool)) *ConfigState {
+	c.PointerConverter = fn
+	return c
 }

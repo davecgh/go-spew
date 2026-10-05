@@ -64,6 +64,7 @@ package spew_test
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"testing"
 	"unsafe"
 
@@ -1039,4 +1040,190 @@ func TestDumpSortedKeys(t *testing.T) {
 		t.Errorf("Sorted keys mismatch:\n  %v %v", s, expected)
 	}
 
+}
+
+type mockSliceHeader struct {
+	Data uintptr
+	Len  int
+	Cap  int
+}
+
+type circularUintptrNode struct {
+	Value int
+	Next  uintptr
+}
+
+func TestDumpFollowUintptr(t *testing.T) {
+	if spew.UnsafeDisabled {
+		t.Skip("skipping test with unsafe disabled")
+	}
+
+	val := 42
+	u := uintptr(unsafe.Pointer(&val))
+	uAddr := fmt.Sprintf("%p", &val)
+
+	cfg := spew.NewDefaultConfig()
+	cfg.FollowUintptrs = true
+	cfg.FollowUintptrType = reflect.TypeOf(int(0))
+
+	// With pointer addresses
+	expected := "(*int)(" + uAddr + ")(42)\n"
+	if s := cfg.Sdump(u); s != expected {
+		t.Errorf("FollowUintptr mismatch:\n got: %s\nwant: %s", s, expected)
+	}
+
+	// With DisablePointerAddresses
+	cfgNoAddr := spew.NewDefaultConfig()
+	cfgNoAddr.DisablePointerAddresses = true
+	cfgNoAddr.SetUintptrType(reflect.TypeOf(int(0)))
+	expectedNoAddr := "(*int)(42)\n"
+	if s := cfgNoAddr.Sdump(u); s != expectedNoAddr {
+		t.Errorf("FollowUintptr with DisablePointerAddresses mismatch:\n got: %s\nwant: %s", s, expectedNoAddr)
+	}
+
+	// Null uintptr (0)
+	nullU := uintptr(0)
+	expectedNull := "(*int)(<nil>)\n"
+	if s := cfg.Sdump(nullU); s != expectedNull {
+		t.Errorf("FollowUintptr null mismatch:\n got: %s\nwant: %s", s, expectedNull)
+	}
+}
+
+func TestDumpFollowUintptrStructField(t *testing.T) {
+	if spew.UnsafeDisabled {
+		t.Skip("skipping test with unsafe disabled")
+	}
+
+	data := [3]int{10, 20, 30}
+	hdr := mockSliceHeader{
+		Data: uintptr(unsafe.Pointer(&data)),
+		Len:  3,
+		Cap:  3,
+	}
+	dataAddr := fmt.Sprintf("%p", &data)
+
+	cfg := spew.NewDefaultConfig()
+	cfg.SetUintptrFieldType("Data", reflect.TypeOf([3]int{}))
+
+	expected := "(spew_test.mockSliceHeader) {\n" +
+		" Data: (*[3]int)(" + dataAddr + ")((len=3 cap=3) {\n" +
+		"  (int) 10,\n" +
+		"  (int) 20,\n" +
+		"  (int) 30\n" +
+		" }),\n" +
+		" Len: (int) 3,\n" +
+		" Cap: (int) 3\n" +
+		"}\n"
+
+	if s := cfg.Sdump(hdr); s != expected {
+		t.Errorf("FollowUintptrStructField mismatch:\n got: %q\nwant: %q", s, expected)
+	}
+}
+
+func TestDumpPointerConversion(t *testing.T) {
+	if spew.UnsafeDisabled {
+		t.Skip("skipping test with unsafe disabled")
+	}
+
+	text := "hello world"
+	u := uintptr(unsafe.Pointer(&text))
+	uAddr := fmt.Sprintf("%p", &text)
+
+	cfg := spew.NewDefaultConfig()
+	cfg.RegisterPointerType(reflect.TypeOf(uintptr(0)), reflect.TypeOf(string("")))
+
+	expected := "(*string)(" + uAddr + ")((len=11) \"hello world\")\n"
+	if s := cfg.Sdump(u); s != expected {
+		t.Errorf("Pointer conversion mismatch:\n got: %s\nwant: %s", s, expected)
+	}
+
+	// Test UnsafePointer conversion
+	uPtr := unsafe.Pointer(&text)
+	cfgUnsafe := spew.NewDefaultConfig()
+	cfgUnsafe.RegisterPointerType(reflect.TypeOf(unsafe.Pointer(nil)), reflect.TypeOf(string("")))
+	if s := cfgUnsafe.Sdump(uPtr); s != expected {
+		t.Errorf("UnsafePointer conversion mismatch:\n got: %s\nwant: %s", s, expected)
+	}
+}
+
+func TestDumpPointerConverter(t *testing.T) {
+	val := 123
+	u := uintptr(unsafe.Pointer(&val))
+
+	cfg := spew.NewDefaultConfig()
+	cfg.SetPointerConverter(func(addr uintptr, typ reflect.Type) (interface{}, bool) {
+		if typ == reflect.TypeOf(uintptr(0)) && addr == u {
+			return "converted-address", true
+		}
+		return nil, false
+	})
+
+	expected := "(string) (len=17) \"converted-address\"\n"
+	if s := cfg.Sdump(u); s != expected {
+		t.Errorf("PointerConverter mismatch:\n got: %s\nwant: %s", s, expected)
+	}
+
+	// Converter returning nil
+	cfgNil := spew.NewDefaultConfig()
+	cfgNil.SetPointerConverter(func(addr uintptr, typ reflect.Type) (interface{}, bool) {
+		return nil, true
+	})
+	expectedNil := "<nil>\n"
+	if s := cfgNil.Sdump(u); s != expectedNil {
+		t.Errorf("PointerConverter nil mismatch:\n got: %s\nwant: %s", s, expectedNil)
+	}
+}
+
+func TestDumpFollowUintptrCircular(t *testing.T) {
+	if spew.UnsafeDisabled {
+		t.Skip("skipping test with unsafe disabled")
+	}
+
+	var node circularUintptrNode
+	node.Value = 1
+	node.Next = uintptr(unsafe.Pointer(&node))
+	nodeAddr := fmt.Sprintf("%p", &node)
+
+	cfg := spew.NewDefaultConfig()
+	cfg.SetUintptrFieldType("Next", reflect.TypeOf(circularUintptrNode{}))
+
+	expected := "(spew_test.circularUintptrNode) {\n" +
+		" Value: (int) 1,\n" +
+		" Next: (*spew_test.circularUintptrNode)(" + nodeAddr + ")({\n" +
+		"  Value: (int) 1,\n" +
+		"  Next: (*spew_test.circularUintptrNode)(" + nodeAddr + ")(<already shown>)\n" +
+		" })\n" +
+		"}\n"
+
+	if s := cfg.Sdump(node); s != expected {
+		t.Errorf("FollowUintptrCircular mismatch:\n got: %q\nwant: %q", s, expected)
+	}
+}
+
+func TestFormatterFollowUintptr(t *testing.T) {
+	if spew.UnsafeDisabled {
+		t.Skip("skipping test with unsafe disabled")
+	}
+
+	val := 99
+	u := uintptr(unsafe.Pointer(&val))
+	uAddr := fmt.Sprintf("%p", &val)
+
+	cfg := spew.NewDefaultConfig()
+	cfg.SetUintptrType(reflect.TypeOf(int(0)))
+
+	expectedV := "<*>99"
+	if s := cfg.Sprintf("%v", u); s != expectedV {
+		t.Errorf("Formatter %%v mismatch:\n got: %s\nwant: %s", s, expectedV)
+	}
+
+	expectedHashV := "(*int)99"
+	if s := cfg.Sprintf("%#v", u); s != expectedHashV {
+		t.Errorf("Formatter %%#v mismatch:\n got: %s\nwant: %s", s, expectedHashV)
+	}
+
+	expectedPlusV := "<*>(" + uAddr + ")99"
+	if s := cfg.Sprintf("%+v", u); s != expectedPlusV {
+		t.Errorf("Formatter %%+v mismatch:\n got: %s\nwant: %s", s, expectedPlusV)
+	}
 }
