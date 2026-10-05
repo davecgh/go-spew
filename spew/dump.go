@@ -55,6 +55,26 @@ type dumpState struct {
 	ignoreNextType   bool
 	ignoreNextIndent bool
 	cs               *ConfigState
+	currentField     string
+}
+
+// resolveTargetType checks if a target type is configured for the given value
+// based on current struct field, pointer type map, or default uintptr type.
+func (d *dumpState) resolveTargetType(v reflect.Value) reflect.Type {
+	if d.currentField != "" && d.cs.UintptrTypes != nil {
+		if t, ok := d.cs.UintptrTypes[d.currentField]; ok {
+			return t
+		}
+	}
+	if d.cs.PointerTypes != nil {
+		if t, ok := d.cs.PointerTypes[v.Type()]; ok {
+			return t
+		}
+	}
+	if d.cs.FollowUintptrs {
+		return d.cs.FollowUintptrType
+	}
+	return nil
 }
 
 // indent performs indentation according to the depth level and cs.Indent
@@ -258,9 +278,73 @@ func (d *dumpState) dump(v reflect.Value) {
 
 	// Handle pointers specially.
 	if kind == reflect.Ptr {
+		if d.cs.PointerTypes != nil {
+			if targetType, ok := d.cs.PointerTypes[v.Type()]; ok {
+				if ptrVal, ok := valueFromAddr(v.Pointer(), targetType); ok {
+					d.indent()
+					d.dumpPtr(ptrVal)
+					return
+				}
+			}
+		}
+		if d.cs.PointerConverter != nil {
+			if conv, ok := d.cs.PointerConverter(v.Pointer(), v.Type()); ok {
+				d.indent()
+				if conv == nil {
+					d.w.Write(nilAngleBytes)
+				} else {
+					d.dump(reflect.ValueOf(conv))
+				}
+				return
+			}
+		}
 		d.indent()
 		d.dumpPtr(v)
 		return
+	}
+
+	// Handle uintptr following and pointer conversion.
+	if kind == reflect.Uintptr {
+		if d.cs.PointerConverter != nil {
+			if conv, ok := d.cs.PointerConverter(uintptr(v.Uint()), v.Type()); ok {
+				d.indent()
+				if conv == nil {
+					d.w.Write(nilAngleBytes)
+				} else {
+					d.dump(reflect.ValueOf(conv))
+				}
+				return
+			}
+		}
+		if targetType := d.resolveTargetType(v); targetType != nil {
+			if ptrVal, ok := valueFromAddr(uintptr(v.Uint()), targetType); ok {
+				d.indent()
+				d.dumpPtr(ptrVal)
+				return
+			}
+		}
+	}
+
+	// Handle unsafe.Pointer conversion.
+	if kind == reflect.UnsafePointer {
+		if d.cs.PointerConverter != nil {
+			if conv, ok := d.cs.PointerConverter(v.Pointer(), v.Type()); ok {
+				d.indent()
+				if conv == nil {
+					d.w.Write(nilAngleBytes)
+				} else {
+					d.dump(reflect.ValueOf(conv))
+				}
+				return
+			}
+		}
+		if targetType := d.resolveTargetType(v); targetType != nil {
+			if ptrVal, ok := valueFromAddr(v.Pointer(), targetType); ok {
+				d.indent()
+				d.dumpPtr(ptrVal)
+				return
+			}
+		}
 	}
 
 	// Print type information unless already handled elsewhere.
@@ -418,7 +502,10 @@ func (d *dumpState) dump(v reflect.Value) {
 				d.w.Write([]byte(vtf.Name))
 				d.w.Write(colonSpaceBytes)
 				d.ignoreNextIndent = true
+				prevField := d.currentField
+				d.currentField = vtf.Name
 				d.dump(d.unpackValue(v.Field(i)))
+				d.currentField = prevField
 				if i < (numFields - 1) {
 					d.w.Write(commaNewlineBytes)
 				} else {

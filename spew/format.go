@@ -38,6 +38,26 @@ type formatState struct {
 	pointers       map[uintptr]int
 	ignoreNextType bool
 	cs             *ConfigState
+	currentField   string
+}
+
+// resolveTargetType checks if a target type is configured for the given value
+// based on current struct field, pointer type map, or default uintptr type.
+func (f *formatState) resolveTargetType(v reflect.Value) reflect.Type {
+	if f.currentField != "" && f.cs.UintptrTypes != nil {
+		if t, ok := f.cs.UintptrTypes[f.currentField]; ok {
+			return t
+		}
+	}
+	if f.cs.PointerTypes != nil {
+		if t, ok := f.cs.PointerTypes[v.Type()]; ok {
+			return t
+		}
+	}
+	if f.cs.FollowUintptrs {
+		return f.cs.FollowUintptrType
+	}
+	return nil
 }
 
 // buildDefaultFormat recreates the original format string without precision
@@ -208,8 +228,66 @@ func (f *formatState) format(v reflect.Value) {
 
 	// Handle pointers specially.
 	if kind == reflect.Ptr {
+		if f.cs.PointerTypes != nil {
+			if targetType, ok := f.cs.PointerTypes[v.Type()]; ok {
+				if ptrVal, ok := valueFromAddr(v.Pointer(), targetType); ok {
+					f.formatPtr(ptrVal)
+					return
+				}
+			}
+		}
+		if f.cs.PointerConverter != nil {
+			if conv, ok := f.cs.PointerConverter(v.Pointer(), v.Type()); ok {
+				if conv == nil {
+					f.fs.Write(nilAngleBytes)
+				} else {
+					f.format(reflect.ValueOf(conv))
+				}
+				return
+			}
+		}
 		f.formatPtr(v)
 		return
+	}
+
+	// Handle uintptr following and pointer conversion.
+	if kind == reflect.Uintptr {
+		if f.cs.PointerConverter != nil {
+			if conv, ok := f.cs.PointerConverter(uintptr(v.Uint()), v.Type()); ok {
+				if conv == nil {
+					f.fs.Write(nilAngleBytes)
+				} else {
+					f.format(reflect.ValueOf(conv))
+				}
+				return
+			}
+		}
+		if targetType := f.resolveTargetType(v); targetType != nil {
+			if ptrVal, ok := valueFromAddr(uintptr(v.Uint()), targetType); ok {
+				f.formatPtr(ptrVal)
+				return
+			}
+		}
+	}
+
+	// Handle unsafe.Pointer conversion.
+	if kind == reflect.UnsafePointer {
+		if f.cs.PointerConverter != nil {
+			if conv, ok := f.cs.PointerConverter(v.Pointer(), v.Type()); ok {
+				if conv == nil {
+					f.fs.Write(nilAngleBytes)
+				} else {
+					f.format(reflect.ValueOf(conv))
+				}
+				return
+			}
+		}
+		if targetType := f.resolveTargetType(v); targetType != nil {
+			if ptrVal, ok := valueFromAddr(v.Pointer(), targetType); ok {
+				f.formatPtr(ptrVal)
+				return
+			}
+		}
 	}
 
 	// Print type information unless already handled elsewhere.
@@ -342,7 +420,10 @@ func (f *formatState) format(v reflect.Value) {
 					f.fs.Write([]byte(vtf.Name))
 					f.fs.Write(colonBytes)
 				}
+				prevField := f.currentField
+				f.currentField = vtf.Name
 				f.format(f.unpackValue(v.Field(i)))
+				f.currentField = prevField
 			}
 		}
 		f.depth--
