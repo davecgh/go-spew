@@ -118,6 +118,14 @@ The following configuration options are available:
 		spewed to strings and sorted by those strings.  This is only
 		considered if SortKeys is true.
 
+	* InspectStringHeader
+		Specifies whether strings should be inspected and displayed with
+		their underlying string header details (data pointer address and length).
+
+	* ShowStringDetails
+		Specifies whether strings should be inspected and displayed with
+		their underlying string header details (data pointer address and length).
+
 Dump Usage
 
 Simply call spew.Dump with a list of variables you want to dump:

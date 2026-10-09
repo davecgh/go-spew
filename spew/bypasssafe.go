@@ -36,3 +36,9 @@ const (
 func unsafeReflectValue(v reflect.Value) reflect.Value {
 	return v
 }
+
+// stringPointer returns the uintptr of the underlying byte slice for s.
+// When unsafe is disabled, 0 is returned.
+func stringPointer(s string) uintptr {
+	return 0
+}
