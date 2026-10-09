@@ -282,9 +282,14 @@ func (d *dumpState) dump(v reflect.Value) {
 	case reflect.Map, reflect.String:
 		valueLen = v.Len()
 	}
-	if valueLen != 0 || !d.cs.DisableCapacities && valueCap != 0 {
+	showStringHeader := v.Kind() == reflect.String && d.cs.inspectStringHeader()
+	var stringData uintptr
+	if showStringHeader {
+		stringData = stringPointer(v.String())
+	}
+	if valueLen != 0 || (!d.cs.DisableCapacities && valueCap != 0) || showStringHeader {
 		d.w.Write(openParenBytes)
-		if valueLen != 0 {
+		if valueLen != 0 || showStringHeader {
 			d.w.Write(lenEqualsBytes)
 			printInt(d.w, int64(valueLen), 10)
 		}
@@ -294,6 +299,11 @@ func (d *dumpState) dump(v reflect.Value) {
 			}
 			d.w.Write(capEqualsBytes)
 			printInt(d.w, int64(valueCap), 10)
+		}
+		if showStringHeader && !d.cs.DisablePointerAddresses {
+			d.w.Write(spaceBytes)
+			d.w.Write(dataEqualsBytes)
+			printHexPtr(d.w, stringData)
 		}
 		d.w.Write(closeParenBytes)
 		d.w.Write(spaceBytes)

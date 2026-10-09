@@ -98,6 +98,22 @@ type ConfigState struct {
 	// be spewed to strings and sorted by those strings.  This is only
 	// considered if SortKeys is true.
 	SpewKeys bool
+
+	// InspectStringHeader specifies whether strings should be inspected and
+	// displayed with their underlying string header details (data pointer
+	// address and length).
+	InspectStringHeader bool
+
+	// ShowStringDetails specifies whether strings should be inspected and
+	// displayed with their underlying string header details (data pointer
+	// address and length).
+	ShowStringDetails bool
+}
+
+// inspectStringHeader returns true if either InspectStringHeader or
+// ShowStringDetails is enabled on the ConfigState.
+func (c *ConfigState) inspectStringHeader() bool {
+	return c.InspectStringHeader || c.ShowStringDetails
 }
 
 // Config is the active configuration of the top-level functions.

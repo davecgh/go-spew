@@ -282,6 +282,18 @@ func (f *formatState) format(v reflect.Value) {
 		f.fs.Write(closeBracketBytes)
 
 	case reflect.String:
+		if f.cs.inspectStringHeader() {
+			s := v.String()
+			f.fs.Write(openParenBytes)
+			f.fs.Write(lenEqualsBytes)
+			printInt(f.fs, int64(len(s)), 10)
+			if f.fs.Flag('+') && !f.cs.DisablePointerAddresses {
+				f.fs.Write(spaceBytes)
+				f.fs.Write(dataEqualsBytes)
+				printHexPtr(f.fs, stringPointer(s))
+			}
+			f.fs.Write(closeParenBytes)
+		}
 		f.fs.Write([]byte(v.String()))
 
 	case reflect.Interface:

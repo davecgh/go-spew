@@ -62,6 +62,7 @@ var (
 	closeMapBytes         = []byte("]")
 	lenEqualsBytes        = []byte("len=")
 	capEqualsBytes        = []byte("cap=")
+	dataEqualsBytes       = []byte("data=")
 )
 
 // hexDigits is used to map a decimal value to a hex digit.

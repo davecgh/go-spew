@@ -143,3 +143,15 @@ func init() {
 	}
 	panic("reflect.Value read-only flag has changed semantics")
 }
+
+// stringHeader mirrors the runtime representation of a string without
+// triggering deprecation warnings on newer Go releases.
+type stringHeader struct {
+	Data uintptr
+	Len  int
+}
+
+// stringPointer returns the uintptr of the underlying byte slice for s.
+func stringPointer(s string) uintptr {
+	return (*stringHeader)(unsafe.Pointer(&s)).Data
+}

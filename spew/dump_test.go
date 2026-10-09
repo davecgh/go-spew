@@ -1040,3 +1040,120 @@ func TestDumpSortedKeys(t *testing.T) {
 	}
 
 }
+
+type testStringHeader struct {
+	Data uintptr
+	Len  int
+}
+
+type structWithStringField struct {
+	Name string
+}
+
+func stringDataAddr(s string) string {
+	if spew.UnsafeDisabled {
+		return "<nil>"
+	}
+	hdr := (*testStringHeader)(unsafe.Pointer(&s))
+	if hdr.Data == 0 {
+		return "<nil>"
+	}
+	return fmt.Sprintf("%#x", hdr.Data)
+}
+
+func TestDumpInspectStringHeader(t *testing.T) {
+	str := "hello world"
+	dataAddr := stringDataAddr(str)
+
+	// Test InspectStringHeader option.
+	cfg := spew.NewDefaultConfig()
+	cfg.InspectStringHeader = true
+	expected := fmt.Sprintf("(string) (len=11 data=%s) \"hello world\"\n", dataAddr)
+	if got := cfg.Sdump(str); got != expected {
+		t.Errorf("InspectStringHeader mismatch:\n got: %s\nwant: %s", got, expected)
+	}
+
+	// Test ShowStringDetails option.
+	cfgDetails := spew.NewDefaultConfig()
+	cfgDetails.ShowStringDetails = true
+	if got := cfgDetails.Sdump(str); got != expected {
+		t.Errorf("ShowStringDetails mismatch:\n got: %s\nwant: %s", got, expected)
+	}
+
+	// Test empty string.
+	emptyStr := ""
+	emptyDataAddr := stringDataAddr(emptyStr)
+	expectedEmpty := fmt.Sprintf("(string) (len=0 data=%s) \"\"\n", emptyDataAddr)
+	if got := cfg.Sdump(emptyStr); got != expectedEmpty {
+		t.Errorf("InspectStringHeader empty string mismatch:\n got: %s\nwant: %s", got, expectedEmpty)
+	}
+
+	// Test pointer to string.
+	strPtr := &str
+	strPtrAddr := fmt.Sprintf("%p", strPtr)
+	expectedPtr := fmt.Sprintf("(*string)(%s)((len=11 data=%s) \"hello world\")\n", strPtrAddr, dataAddr)
+	if got := cfg.Sdump(strPtr); got != expectedPtr {
+		t.Errorf("InspectStringHeader pointer mismatch:\n got: %s\nwant: %s", got, expectedPtr)
+	}
+
+	// Test struct containing string field.
+	st := structWithStringField{Name: str}
+	expectedStruct := "(spew_test.structWithStringField) {\n" +
+		fmt.Sprintf(" Name: (string) (len=11 data=%s) \"hello world\"\n", dataAddr) +
+		"}\n"
+	if got := cfg.Sdump(st); got != expectedStruct {
+		t.Errorf("InspectStringHeader struct mismatch:\n got: %s\nwant: %s", got, expectedStruct)
+	}
+
+	// Test with DisablePointerAddresses.
+	cfgNoAddr := spew.NewDefaultConfig()
+	cfgNoAddr.InspectStringHeader = true
+	cfgNoAddr.DisablePointerAddresses = true
+	expectedNoAddr := "(string) (len=11) \"hello world\"\n"
+	if got := cfgNoAddr.Sdump(str); got != expectedNoAddr {
+		t.Errorf("InspectStringHeader with DisablePointerAddresses mismatch:\n got: %s\nwant: %s", got, expectedNoAddr)
+	}
+	expectedEmptyNoAddr := "(string) (len=0) \"\"\n"
+	if got := cfgNoAddr.Sdump(emptyStr); got != expectedEmptyNoAddr {
+		t.Errorf("InspectStringHeader empty with DisablePointerAddresses mismatch:\n got: %s\nwant: %s", got, expectedEmptyNoAddr)
+	}
+}
+
+func TestFormatterInspectStringHeader(t *testing.T) {
+	str := "hello"
+	dataAddr := stringDataAddr(str)
+
+	cfg := spew.NewDefaultConfig()
+	cfg.InspectStringHeader = true
+
+	expectedV := "(len=5)hello"
+	if got := cfg.Sprintf("%v", str); got != expectedV {
+		t.Errorf("Formatter %%v mismatch:\n got: %s\nwant: %s", got, expectedV)
+	}
+
+	expectedPlusV := fmt.Sprintf("(len=5 data=%s)hello", dataAddr)
+	if got := cfg.Sprintf("%+v", str); got != expectedPlusV {
+		t.Errorf("Formatter %%+v mismatch:\n got: %s\nwant: %s", got, expectedPlusV)
+	}
+
+	expectedHashV := "(string)(len=5)hello"
+	if got := cfg.Sprintf("%#v", str); got != expectedHashV {
+		t.Errorf("Formatter %%#v mismatch:\n got: %s\nwant: %s", got, expectedHashV)
+	}
+
+	expectedHashPlusV := fmt.Sprintf("(string)(len=5 data=%s)hello", dataAddr)
+	if got := cfg.Sprintf("%#+v", str); got != expectedHashPlusV {
+		t.Errorf("Formatter %%#+v mismatch:\n got: %s\nwant: %s", got, expectedHashPlusV)
+	}
+
+	// Test with DisablePointerAddresses.
+	cfgNoAddr := spew.NewDefaultConfig()
+	cfgNoAddr.ShowStringDetails = true
+	cfgNoAddr.DisablePointerAddresses = true
+	if got := cfgNoAddr.Sprintf("%+v", str); got != expectedV {
+		t.Errorf("Formatter %%+v with DisablePointerAddresses mismatch:\n got: %s\nwant: %s", got, expectedV)
+	}
+	if got := cfgNoAddr.Sprintf("%#+v", str); got != expectedHashV {
+		t.Errorf("Formatter %%#+v with DisablePointerAddresses mismatch:\n got: %s\nwant: %s", got, expectedHashV)
+	}
+}
