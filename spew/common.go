@@ -106,7 +106,10 @@ func handleMethods(cs *ConfigState, w io.Writer, v reflect.Value) (handled bool)
 	if !cs.DisablePointerMethods && !UnsafeDisabled && !v.CanAddr() {
 		v = unsafeReflectValue(v)
 	}
-	if v.CanAddr() {
+	// Calling Addr on a non-addressable value that was made addressable by
+	// unsafeReflectValue produces an invalid pointer for map, slice, and func
+	// kinds. Call their methods on the value itself instead.
+	if v.CanAddr() && v.Kind() != reflect.Map && v.Kind() != reflect.Slice && v.Kind() != reflect.Func {
 		v = v.Addr()
 	}
 
